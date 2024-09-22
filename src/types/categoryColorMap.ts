@@ -1,0 +1,1 @@
+export type CategoryColorMap = Record<string, string>;

@@ -57,50 +57,58 @@ const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpe
 const identifyRecurringTransactions = (expenses: Expense[]): Expense[] => {
   const transactionMap: Record<string, Expense[]> = {};
 
-  // Group transactions by narrative and amount
+  // Group transactions by narrative only
   expenses.forEach(expense => {
-    const key = `${expense.Narrative}-${expense.DebitAmount.toFixed(2)}`;
+    const key = expense.Narrative;
     if (!transactionMap[key]) {
       transactionMap[key] = [];
     }
     transactionMap[key].push(expense);
   });
 
-  // Identify recurring transactions
   const recurringTransactions: Set<string> = new Set();
 
   Object.entries(transactionMap).forEach(([key, transactions]) => {
-    if (transactions.length > 1) {
+    if (transactions.length >= 2) {
       // Sort transactions by date
-      transactions.sort((a, b) => parse(a.Date, 'yyyy-MM-dd', new Date()).getTime() - parse(b.Date, 'yyyy-MM-dd', new Date()).getTime());
+      transactions.sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
 
       // Check for regular intervals
       const intervals: number[] = [];
       for (let i = 1; i < transactions.length; i++) {
         const daysDiff = differenceInDays(
-          parse(transactions[i].Date, 'yyyy-MM-dd', new Date()),
-          parse(transactions[i-1].Date, 'yyyy-MM-dd', new Date())
+          new Date(transactions[i].Date),
+          new Date(transactions[i-1].Date)
         );
         intervals.push(daysDiff);
       }
 
-      // Check if intervals are consistent (allow for some variation)
-      const isRegular = intervals.every(interval => 
-        Math.abs(interval - intervals[0]) <= 5 || // Allow 5 days variation for monthly
-        Math.abs(interval - intervals[0]) <= 10 // Allow 10 days variation for quarterly
+      // Check if intervals are consistent with monthly billing (allowing for more flexibility)
+      const isMonthly = intervals.every(interval => 
+        (interval >= 20 && interval <= 40) || // Normal monthly interval with more flexibility
+        (interval >= 1 && interval <= 10) || // Same month or very close months
+        (interval >= 50 && interval <= 70) // Skipped a month due to same-month occurrences
       );
 
-      if (isRegular) {
+      // Check for similar amounts (allowing 25% variation)
+      const amounts = transactions.map(t => t.DebitAmount);
+      const averageAmount = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;
+      const hasSimilarAmounts = amounts.every(amount => 
+        Math.abs(amount - averageAmount) <= averageAmount * 0.25
+      );
+
+      // Mark as recurring if it's monthly or has at least 3 occurrences with similar amounts
+      if (isMonthly || (transactions.length >= 3 && hasSimilarAmounts)) {
         recurringTransactions.add(key);
       }
     }
   });
 
   // Mark recurring transactions
-  return expenses.map(expense => {
-    const key = `${expense.Narrative}-${expense.DebitAmount.toFixed(2)}`;
-    return { ...expense, IsRecurring: recurringTransactions.has(key) };
-  });
+  return expenses.map(expense => ({
+    ...expense,
+    IsRecurring: recurringTransactions.has(expense.Narrative)
+  }));
 };
 
 export default ExpenseParser;

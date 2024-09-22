@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/credit-card-expense-tracker/static/css/main.d3b21540.css",
+    "main.js": "/credit-card-expense-tracker/static/js/main.da95eab4.js",
+    "static/js/453.fe244584.chunk.js": "/credit-card-expense-tracker/static/js/453.fe244584.chunk.js",
+    "index.html": "/credit-card-expense-tracker/index.html",
+    "main.d3b21540.css.map": "/credit-card-expense-tracker/static/css/main.d3b21540.css.map",
+    "main.da95eab4.js.map": "/credit-card-expense-tracker/static/js/main.da95eab4.js.map",
+    "453.fe244584.chunk.js.map": "/credit-card-expense-tracker/static/js/453.fe244584.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d3b21540.css",
+    "static/js/main.da95eab4.js"
+  ]
+}

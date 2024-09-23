@@ -8,6 +8,7 @@ import { CategoryColorMap } from '../types/categoryColorMap';
 import RecurringTransactionNotification from './RecurringTransactionNotification';
 import DevPage from './DevPage';
 import { logToDevPage } from '../utils/logger';
+import { Link } from 'react-router-dom';
 
 const MainScreen: React.FC = () => {
   const [fileContent, setFileContent] = useState<string>('');
@@ -36,12 +37,19 @@ const MainScreen: React.FC = () => {
       <header className="bg-blue-600 text-white shadow-md">
         <div className="container mx-auto py-4 px-6 flex justify-between items-center">
           <h1 className="text-3xl font-bold">Credit Card Expense Tracker</h1>
-          <button
-            onClick={() => setShowDevPage(!showDevPage)}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            {showDevPage ? 'Hide Dev Page' : 'Show Dev Page'}
-          </button>
+          <div>
+            <button
+              onClick={() => setShowDevPage(!showDevPage)}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+            >
+              {showDevPage ? 'Hide Dev Page' : 'Show Dev Page'}
+            </button>
+            <Link to="/settings">
+              <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                Settings
+              </button>
+            </Link>
+          </div>
         </div>
       </header>
       <main className="flex-grow container mx-auto px-6 py-8">

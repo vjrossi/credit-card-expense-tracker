@@ -19,4 +19,5 @@ recurring_transaction_test.csv
 ExpenseParser.test.tsx
 papaparse.d.ts
 react-app-env.d.ts
-
+mainfest.json
+readme.md

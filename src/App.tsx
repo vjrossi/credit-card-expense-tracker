@@ -1,21 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { HashRouter, Route, Routes } from 'react-router-dom'; // Update import
-import MainScreen from './components/MainScreen'; // Import MainScreen
+import React from 'react';
+import { HashRouter as Router, Route, Routes } from 'react-router-dom';
+import MainScreen from './components/MainScreen';
+import SettingsPage from './components/SettingsPage';
 
 const App: React.FC = () => {
-  const [hasLogs, setHasLogs] = useState<boolean>(false);
-
-  useEffect(() => {
-    const storedLogs = localStorage.getItem('devLogs');
-    setHasLogs(!!storedLogs);
-  }, []);
-
   return (
-    <HashRouter> {/* Wrap the main component with HashRouter */}
+    <Router>
       <Routes>
-        <Route path="/" element={<MainScreen />} /> {/* Add route for MainScreen */}
+        <Route path="/" element={<MainScreen />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
-    </HashRouter>
+    </Router>
   );
 };
 

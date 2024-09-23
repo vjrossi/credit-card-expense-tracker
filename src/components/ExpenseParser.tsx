@@ -106,11 +106,18 @@ export const identifyRecurringTransactions = (expenses: Expense[]): Expense[] =>
 
       // Check if intervals are consistent with monthly billing (allowing for more flexibility)
       const isMonthly = intervals.every(interval =>
-        (interval >= 20 && interval <= 40) || // Normal monthly interval with more flexibility
-        (interval >= 1 && interval <= 10) || // Same month or very close months
-        (interval >= 50 && interval <= 70) // Skipped a month due to same-month occurrences
+        (interval >= 28 && interval <= 32)
       );
 
+      // check not just for monthly, but also for other common bill frequencies
+      const isQuarterly = intervals.every(interval =>
+        (interval >= 84 && interval <= 96)
+      );
+
+      const isEveryTwoMonths = intervals.every(interval =>
+        (interval >= 56 && interval <= 64)
+      );
+      
       // Check for similar amounts (allowing 25% variation)
       const amounts = transactions.map(t => t.DebitAmount);
       const averageAmount = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;
@@ -119,7 +126,7 @@ export const identifyRecurringTransactions = (expenses: Expense[]): Expense[] =>
       );
 
       // Mark as recurring if it's monthly or has at least 3 occurrences with similar amounts
-      if (isMonthly || (transactions.length >= 3 && hasSimilarAmounts)) {
+      if (isMonthly || isQuarterly || isEveryTwoMonths || (transactions.length >= 3 && hasSimilarAmounts)) {
         recurringTransactions.add(key);
       }
     }

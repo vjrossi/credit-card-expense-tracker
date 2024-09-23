@@ -36,19 +36,19 @@ const MainScreen: React.FC = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <header className="bg-blue-600 text-white shadow-md">
         <div className="container mx-auto py-4 px-6 flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Credit Card Expense Tracker</h1>
+          <h1 className="text-3xl font-bold">Quick Transaction Analyser</h1>
           <div>
-            <button
+            {/* <button
               onClick={() => setShowDevPage(!showDevPage)}
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
             >
               {showDevPage ? 'Hide Dev Page' : 'Show Dev Page'}
-            </button>
-            <Link to="/settings">
+            </button> */}
+            {/* <Link to="/settings">
               <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                 Settings
               </button>
-            </Link>
+            </Link> */}
           </div>
         </div>
       </header>
@@ -57,7 +57,7 @@ const MainScreen: React.FC = () => {
         <div className="bg-white shadow-md rounded-lg p-6 mb-8 transition-all duration-300 hover:shadow-lg">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">Upload Your Statement</h2>
           <p className="text-gray-600 mb-4">
-            To use this expense tracker, please export a transaction list or statement from your bank in CSV format. Most banks offer this option in their online banking portal.
+            To use this app, please export a transaction list or statement from your bank in CSV format. Most banks offer this option in their online banking portal.
           </p>
           <FileUpload
             onFileContentChange={(content) => {

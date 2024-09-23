@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 
 const SettingsPage: React.FC = () => {
   return (
@@ -6,6 +7,7 @@ const SettingsPage: React.FC = () => {
       <header className="bg-blue-600 text-white shadow-md">
         <div className="container mx-auto py-4 px-6 flex justify-between items-center">
           <h1 className="text-3xl font-bold">Settings</h1>
+          <Link to="/" className="text-white underline">Home</Link>
         </div>
       </header>
       <main className="flex-grow container mx-auto px-6 py-8">

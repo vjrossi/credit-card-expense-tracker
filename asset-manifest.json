@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/credit-card-expense-tracker/static/css/main.f7e43341.css",
-    "main.js": "/credit-card-expense-tracker/static/js/main.9c782f2f.js",
+    "main.css": "/credit-card-expense-tracker/static/css/main.3dff05f7.css",
+    "main.js": "/credit-card-expense-tracker/static/js/main.753aee64.js",
     "static/js/453.fe244584.chunk.js": "/credit-card-expense-tracker/static/js/453.fe244584.chunk.js",
     "index.html": "/credit-card-expense-tracker/index.html",
-    "main.f7e43341.css.map": "/credit-card-expense-tracker/static/css/main.f7e43341.css.map",
-    "main.9c782f2f.js.map": "/credit-card-expense-tracker/static/js/main.9c782f2f.js.map",
+    "main.3dff05f7.css.map": "/credit-card-expense-tracker/static/css/main.3dff05f7.css.map",
+    "main.753aee64.js.map": "/credit-card-expense-tracker/static/js/main.753aee64.js.map",
     "453.fe244584.chunk.js.map": "/credit-card-expense-tracker/static/js/453.fe244584.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f7e43341.css",
-    "static/js/main.9c782f2f.js"
+    "static/css/main.3dff05f7.css",
+    "static/js/main.753aee64.js"
   ]
 }

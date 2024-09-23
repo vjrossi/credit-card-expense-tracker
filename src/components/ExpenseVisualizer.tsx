@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Expense } from '../types/expense';
-import { CategoryColorMap } from '../types/categoryColorMap'; // Fixed import casing
+import { CategoryColorMap } from '../types/categoryColorMap';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -11,42 +11,45 @@ interface ExpenseVisualizerProps {
   setCategoryColorMap: React.Dispatch<React.SetStateAction<CategoryColorMap>>;
 }
 
+const categoryColors = [
+  '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+];
+
 const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCategoryColorMap }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const categoriesWithExpenses = expenses.reduce((acc, expense) => {
-    const amount = expense.DebitAmount || 0;
-    if (!acc[expense.Category]) {
-      acc[expense.Category] = { total: 0, expenses: [] };
-    }
-    acc[expense.Category].total += amount;
-    acc[expense.Category].expenses.push(expense);
-    return acc;
-  }, {} as Record<string, { total: number; expenses: Expense[] }>);
+  const categoriesWithExpenses = useMemo(() => {
+    return expenses.reduce((acc, expense) => {
+      const amount = expense.DebitAmount || 0;
+      if (!acc[expense.Category]) {
+        acc[expense.Category] = { total: 0, expenses: [] };
+      }
+      acc[expense.Category].total += amount;
+      acc[expense.Category].expenses.push(expense);
+      return acc;
+    }, {} as Record<string, { total: number; expenses: Expense[] }>);
+  }, [expenses]);
 
-  const categories = Object.keys(categoriesWithExpenses);
-  const totals = categories.map(cat => categoriesWithExpenses[cat].total);
+  const categories = useMemo(() => Object.keys(categoriesWithExpenses), [categoriesWithExpenses]);
+  const totals = useMemo(() => categories.map(cat => categoriesWithExpenses[cat].total), [categories, categoriesWithExpenses]);
 
-  const categoryColors = [
-    '#FF6384',
-    '#36A2EB',
-    '#FFCE56',
-    '#4BC0C0',
-    '#9966FF',
-    '#FF9F40',
-  ];
+  const memoizedCategoryColorMap = useMemo(() => {
+    return categories.reduce((acc, category, index) => {
+      acc[category] = categoryColors[index % categoryColors.length];
+      return acc;
+    }, {} as Record<string, string>);
+  }, [categories]);
 
-  const categoryColorMap = categories.reduce((acc, category, index) => {
-    acc[category] = categoryColors[index % categoryColors.length];
-    return acc;
-  }, {} as Record<string, string>);
+  useEffect(() => {
+    setCategoryColorMap(memoizedCategoryColorMap);
+  }, [memoizedCategoryColorMap, setCategoryColorMap]);
 
   const data = {
     labels: categories,
     datasets: [
       {
         data: totals,
-        backgroundColor: categories.map(cat => categoryColorMap[cat]),
+        backgroundColor: categories.map(cat => memoizedCategoryColorMap[cat]),
       },
     ],
   };
@@ -76,15 +79,6 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
       }
     },
   };
-
-  useEffect(() => {
-    const newCategoryColorMap = categories.reduce((acc, category, index) => {
-      acc[category] = categoryColors[index % categoryColors.length];
-      return acc;
-    }, {} as Record<string, string>);
-
-    setCategoryColorMap(newCategoryColorMap);
-  }, [categories, categoryColors, setCategoryColorMap]);
 
   const groupRecurringTransactions = (expenses: Expense[]): Record<string, Expense[]> => {
     return expenses

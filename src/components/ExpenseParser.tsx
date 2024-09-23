@@ -6,6 +6,7 @@ import { parse, differenceInDays, isValid } from 'date-fns';
 interface ExpenseParserProps {
   fileContent: string;
   onParsedExpenses: (expenses: Expense[], recurringCount: number) => void;
+  ignoreZeroTransactions: boolean;
 }
 
 const GROCERY_STORES = [
@@ -129,28 +130,34 @@ const categorizeExpense = (narrative: string): string => {
   return 'Other';
 };
 
-const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpenses }) => {
+const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpenses, ignoreZeroTransactions }) => {
   useEffect(() => {
     if (fileContent) {
       Papa.parse(fileContent, {
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
-          const parsedData = results.data.map((row: any) => {
-            const dateString = row.Date || '';
-            const parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
+          const parsedData = results.data
+            .map((row: any) => {
+              const dateString = row.Date || '';
+              const parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
+              const debitAmount = parseFloat(row['Debit Amount'] || '0');
 
-            const expense: Expense = {
-              Date: isValid(parsedDate) ? parsedDate.toISOString().split('T')[0] : '',
-              Narrative: row.Narrative || '',
-              DebitAmount: parseFloat(row['Debit Amount'] || '0'),
-              CreditAmount: parseFloat(row['Credit Amount'] || '0'),
-              Category: categorizeExpense(row.Narrative || ''),
-              IsRecurring: false, // We'll set this to false initially
-            };
-            return expense;
-          });
+              if (ignoreZeroTransactions && debitAmount === 0) {
+                return null;
+              }
 
+              const expense: Expense = {
+                Date: isValid(parsedDate) ? parsedDate.toISOString().split('T')[0] : '',
+                Narrative: row.Narrative || '',
+                DebitAmount: debitAmount,
+                CreditAmount: parseFloat(row['Credit Amount'] || '0'),
+                Category: categorizeExpense(row.Narrative || ''),
+                IsRecurring: false,
+              };
+              return expense;
+            })
+            .filter((expense): expense is Expense => expense !== null);
           // Flag recurring transactions
           const dataWithRecurring = identifyRecurringTransactions(parsedData);
           // Count recurring transactions
@@ -162,7 +169,7 @@ const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpe
         },
       });
     }
-  }, [fileContent, onParsedExpenses]);
+  }, [fileContent, onParsedExpenses, ignoreZeroTransactions]);
 
   return null; // Remove the rendering of parsed expenses
 };

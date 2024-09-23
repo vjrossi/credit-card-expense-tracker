@@ -17,6 +17,8 @@ const App: React.FC = () => {
   const [recurringTransactions, setRecurringTransactions] = useState<Expense[]>([]);
   const [showDevPage, setShowDevPage] = useState<boolean>(false);
   const [hasLogs, setHasLogs] = useState<boolean>(false);
+  const [ignoreZeroTransactions, setIgnoreZeroTransactions] = useState<boolean>(false);
+  const [isFileUploaded, setIsFileUploaded] = useState<boolean>(false);
 
   const clearDevLogs = useCallback(() => {
     localStorage.removeItem('devLogs');
@@ -41,8 +43,8 @@ const App: React.FC = () => {
       <header className="bg-blue-600 text-white shadow-md">
         <div className="container mx-auto py-4 px-6 flex justify-between items-center">
           <h1 className="text-3xl font-bold">Credit Card Expense Tracker</h1>
-          <button 
-            onClick={() => setShowDevPage(!showDevPage)} 
+          <button
+            onClick={() => setShowDevPage(!showDevPage)}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
             {showDevPage ? 'Hide Dev Page' : 'Show Dev Page'}
@@ -56,13 +58,20 @@ const App: React.FC = () => {
           <p className="text-gray-600 mb-4">
             To use this expense tracker, please export a transaction list or statement from your bank in CSV format. Most banks offer this option in their online banking portal.
           </p>
-          <FileUpload onFileContentChange={setFileContent} />
-        </div>
-        <ExpenseParser fileContent={fileContent} onParsedExpenses={handleParsedExpenses} />
+          <FileUpload
+            onFileContentChange={(content) => {
+              setFileContent(content);
+              setIsFileUploaded(true);
+            }}
+            ignoreZeroTransactions={ignoreZeroTransactions}
+            onIgnoreZeroTransactionsChange={setIgnoreZeroTransactions}
+            isFileUploaded={isFileUploaded}
+          />        </div>
+        <ExpenseParser fileContent={fileContent} onParsedExpenses={handleParsedExpenses} ignoreZeroTransactions={ignoreZeroTransactions} />
         {expenses.length > 0 && (
           <>
-            <RecurringTransactionNotification 
-              count={recurringCount} 
+            <RecurringTransactionNotification
+              count={recurringCount}
               recurringTransactions={recurringTransactions}
               categoryColorMap={categoryColorMap}
             />

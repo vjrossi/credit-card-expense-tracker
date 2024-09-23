@@ -1,6 +1,6 @@
 .scrollable-container {
     max-height: 400px; /* Adjust the height as needed */
-    overflow-y: auto;
+    overflow-y: auto custom-scrollbar;
     border: 1px solid #ccc;
     padding: 10px;
     background-color: #f9f9f9;

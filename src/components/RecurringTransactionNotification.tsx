@@ -24,8 +24,8 @@ const RecurringTransactionNotification: React.FC<RecurringTransactionNotificatio
   const recurringGroupCount = Object.keys(groupedTransactions).length;
 
   const toggleGroup = (narrative: string) => {
-    setExpandedGroups(prev => 
-      prev.includes(narrative) 
+    setExpandedGroups(prev =>
+      prev.includes(narrative)
         ? prev.filter(group => group !== narrative)
         : [...prev, narrative]
     );
@@ -42,7 +42,7 @@ const RecurringTransactionNotification: React.FC<RecurringTransactionNotificatio
       <div className="mt-4 max-h-60 overflow-y-auto custom-scrollbar">
         {Object.entries(groupedTransactions).map(([narrative, transactions]) => (
           <div key={narrative} className="mb-4 last:mb-0">
-            <button 
+            <button
               onClick={() => toggleGroup(narrative)}
               className="w-full text-left font-semibold text-gray-700 mb-2 flex justify-between items-center cursor-pointer"
             >
@@ -63,9 +63,9 @@ const RecurringTransactionNotification: React.FC<RecurringTransactionNotificatio
                       <td className="py-2 px-4">{format(new Date(transaction.Date), 'MMM d, yyyy')}</td>
                       <td className="py-2 px-4 text-right">${transaction.DebitAmount.toFixed(2)}</td>
                       <td className="py-2 px-4 text-center">
-                        <span 
+                        <span
                           className="text-xs font-medium px-2 py-1 rounded-full inline-block"
-                          style={{ 
+                          style={{
                             backgroundColor: categoryColorMap[transaction.Category] || '#808080',
                             color: 'white'
                           }}

@@ -75,7 +75,7 @@ const TransactionTimespan: React.FC<TransactionTimespanProps> = ({ expenses, cat
           <p className="text-sm text-gray-500">Start Date</p>
           <p className="text-lg font-semibold text-gray-800">{formatDate(startDate)}</p>
         </div>
-        <div className="flex-grow mx-4 relative">
+        <div className="flex-grow mx-4 relative custom-scrollbar">
           <div className="h-12 bg-blue-100 rounded-full overflow-hidden flex items-end justify-between px-2">
             {timelineMarkers}
           </div>

@@ -100,7 +100,7 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
           <div className="border border-gray-300 rounded-lg p-4 h-96 flex flex-col">
             {selectedCategory ? (
               <>
-                <div className="overflow-y-auto flex-grow pr-4">
+                <div className="overflow-y-auto flex-grow pr-4 custom-scrollbar">
                   <table className="w-full text-sm">
                     <tbody>
                       {categoriesWithExpenses[selectedCategory].expenses.map((expense, index) => (

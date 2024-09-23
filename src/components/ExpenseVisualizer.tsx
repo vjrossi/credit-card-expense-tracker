@@ -80,25 +80,17 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
     },
   };
 
-  const groupRecurringTransactions = (expenses: Expense[]): Record<string, Expense[]> => {
-    return expenses
-      .filter(expense => expense.IsRecurring)
-      .reduce((acc, expense) => {
-        if (!acc[expense.Narrative]) {
-          acc[expense.Narrative] = [];
-        }
-        acc[expense.Narrative].push(expense);
-        return acc;
-      }, {} as Record<string, Expense[]>);
-  };
+  // Removed unused groupRecurringTransactions function
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col lg:flex-row justify-between gap-8">
         <div className="w-full lg:w-1/2">
           <h2 className="text-2xl font-bold mb-4 text-gray-800">Expenses by Category</h2>
-          <div className="aspect-square">
-            <Pie data={data} options={options} />
+          <div className="h-96 flex items-center justify-center">
+            <div className="w-[90%] h-[90%]">
+              <Pie data={data} options={options} />
+            </div>
           </div>
         </div>
         <div className="w-full lg:w-1/2">

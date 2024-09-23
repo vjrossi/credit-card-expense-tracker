@@ -56,9 +56,9 @@ const TransactionTimespan: React.FC<TransactionTimespanProps> = ({ expenses, cat
     return (
       <div
         key={dateString}
-        className="w-0.5 bg-blue-400 hover:bg-blue-600 transition-all duration-200 cursor-pointer"
+        className="w-1.5 bg-blue-400 hover:bg-blue-600 transition-all duration-200 cursor-pointer"
         style={{
-          height: `${Math.max(4, height)}%`,
+          height: `${Math.max(4, height * 2.5)}%`, // Increase the scaling factor
           opacity: dayData.total > 0 ? Math.max(0.3, 0.5 + (height / 100)) : 0.1,
         }}
         onClick={() => setSelectedDate(dateString)}

@@ -1,0 +1,22 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore build directories
+dist/
+build/
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+*.swp
+
+# Ignore specific cursor-related files
+*.cursor
+
+recurring_transaction_test.csv
+ExpenseParser.test.tsx
+papaparse.d.ts
+react-app-env.d.ts
+

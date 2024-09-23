@@ -36,18 +36,17 @@ const RecurringTransactionNotification: React.FC<RecurringTransactionNotificatio
       <div className="flex justify-between items-center mb-4">
         <div>
           <p className="font-bold">Recurring Transactions Detected</p>
-          <p>We've identified {recurringGroupCount} recurring transaction{recurringGroupCount !== 1 ? 's' : ''}.</p>
+          <p>We've identified {recurringGroupCount} recurring transaction{recurringGroupCount !== 1 ? 's' : ''}. <span className="text-sm text-gray-600">(Click on an item to expand)</span></p>
         </div>
       </div>
-      <div className="mt-4 max-h-60 overflow-y-auto">
+      <div className="mt-4 max-h-60 overflow-y-auto custom-scrollbar">
         {Object.entries(groupedTransactions).map(([narrative, transactions]) => (
           <div key={narrative} className="mb-4 last:mb-0">
             <button 
               onClick={() => toggleGroup(narrative)}
-              className="w-full text-left font-semibold text-gray-700 mb-2 flex justify-between items-center"
+              className="w-full text-left font-semibold text-gray-700 mb-2 flex justify-between items-center cursor-pointer"
             >
               <span>{narrative}</span>
-              <span>{expandedGroups.includes(narrative) ? '▼' : '▶'}</span>
             </button>
             {expandedGroups.includes(narrative) && (
               <table className="w-full text-sm">

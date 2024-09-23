@@ -23,18 +23,16 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContentChange, ignoreZero
   return (
     <div className="flex flex-col items-center justify-center w-full">
       <div className="flex items-center justify-between w-full mb-4">
-        <label htmlFor="ignore-zero-transactions" className="flex items-center cursor-pointer">
-          <div className="relative">
-            <input
-              type="checkbox"
-              id="ignore-zero-transactions"
-              className="sr-only peer"
-              checked={ignoreZeroTransactions}
-              onChange={(e) => onIgnoreZeroTransactionsChange(e.target.checked)}
-              disabled={isFileUploaded}
-            />
-            <div className="w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-blue-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-          </div>
+        <label htmlFor="ignore-zero-transactions" className="inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            id="ignore-zero-transactions"
+            className="sr-only peer"
+            checked={ignoreZeroTransactions}
+            onChange={(e) => onIgnoreZeroTransactionsChange(e.target.checked)}
+            disabled={isFileUploaded}
+          />
+          <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
           <span className="ml-3 text-sm font-medium text-gray-700 peer-disabled:text-gray-400">Ignore $0 transactions</span>
         </label>
       </div>

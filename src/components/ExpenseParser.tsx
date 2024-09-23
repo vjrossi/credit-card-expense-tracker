@@ -2,111 +2,13 @@ import React, { useEffect } from 'react';
 import Papa from 'papaparse';
 import { Expense } from '../types/expense';
 import { parse, differenceInDays, isValid } from 'date-fns';
+import { GROCERY_STORES, INSURANCE_COMPANIES, UTILITIES, DIGITAL_ENTERTAINMENT, INTERNET_SERVICE_PROVIDERS, FAST_FOOD_RESTAURANTS, OTHER_GOODS } from '../constants/expenseCategories';
 
 interface ExpenseParserProps {
   fileContent: string;
   onParsedExpenses: (expenses: Expense[], recurringCount: number) => void;
   ignoreZeroTransactions: boolean;
 }
-
-const GROCERY_STORES = [
-  'woolworths', 'coles', 'aldi', 'iga', 'foodworks', 'harris farm', 'costco',
-  'spar', 'foodland', 'drakes', 'romeo\'s', 'supabarn', 'leo\'s fine food',
-  'ritchies', 'fresh provisions', 'farmer jack\'s', 'spudshed',
-  '7-eleven', 'night owl', 'nrma food', 'bp shop', 'caltex woolworths',
-  'coles express', 'metro', 'uchoose', 'friendly grocer',
-  'supa iga', 'xpress', 'nqr', 'cheap as chips', 'save more',
-  'wray organic', 'flannery\'s', 'the source bulk foods', 'goodies and grains',
-  'lettuce deliver', 'fruitezy', 'fresh st market', 'fresh pantry', 'fresh choice',
-  'foodary', 'ezy mart', 'quickstop', 'on the run', 'otr', 'starmart',
-  'ampol foodary', 'united petroleum'
-];
-
-const INSURANCE_COMPANIES = [
-  'allianz', 'aami', 'bupa', 'medibank', 'nib', 'qbe', 'suncorp', 'youi',
-  'budget direct', 'hcf', 'ahm', 'apia', 'cgu', 'gio', 'racv', 'racq', 'rac',
-  'nrma insurance', 'real insurance', 'woolworths insurance', 'coles insurance',
-  'australia post insurance', 'virgin money insurance', 'comminsure',
-  'hbf', 'hif', 'frank health insurance', 'gmhba', 'defence health',
-  'teachers health', 'nurses & midwives health', 'westfund', 'peoplecare',
-  'australian unity', 'cbhs', 'rt health', 'navy health', 'police health',
-  'emergency services health', 'doctors\' health fund', 'onemedifund',
-  'health care insurance', 'health partners', 'latrobe health services',
-  'mildura health fund', 'phoenix health fund', 'qantas insurance',
-  'st.luke\'s health', 'transport health', 'uni-health insurance',
-  'westpac insurance', 'anz insurance', 'nab insurance', 'ing insurance',
-  'bendigo bank insurance', 'bank of melbourne insurance', 'bank sa insurance',
-  'st.george insurance', 'insurance australia group', 'zurich australia',
-  'hollard insurance', 'auto & general insurance', 'progressive insurance',
-  'insurance', 'life insurance', 'health insurance', 'car insurance',
-  'home insurance', 'contents insurance', 'travel insurance', 'pet insurance',
-  'landlord insurance', 'business insurance', 'income protection'
-];
-
-const UTILITIES = [
-  // Electricity and Gas Retailers
-  'origin energy', 'agl', 'energyaustralia', 'alinta energy', 'red energy',
-  'simply energy', 'powershop', 'momentum energy', 'lumo energy', 'dodo power & gas',
-  'click energy', 'powerdirect', 'diamond energy', 'sumo', 'tango energy',
-  'people energy', 'globird energy', 'nectr', 'mojo power', 'energy locals',
-  'elysian energy', 'pooled energy', 'qenergy', 'reamenergy', 'actewagl',
-  'aurora energy',
-
-  // Water Utilities
-  'sydney water', 'melbourne water', 'south east water', 'yarra valley water',
-  'western water', 'hunter water', 'sa water', 'water corporation', 'taswater',
-  'icon water', 'power and water corporation',
-
-  // Electricity Distributors
-  'ergon energy', 'energex', 'western power', 'ausnet services', 'citipower',
-  'powercor', 'united energy', 'jemena', 'essential energy', 'endeavour energy',
-  'ausgrid', 'evoenergy', 'tasnetworks', 'powerwater', 'horizon power',
-
-  // Gas Distributors
-  'multinet gas', 'australian gas networks', 'jemena gas', 'atco gas australia',
-  'tas gas networks', 'evoenergy gas',
-
-  // LPG Providers
-  'elgas', 'kleenheat', 'origin lpg', 'supagas',
-
-  // Waste Management Companies
-  'cleanaway', 'veolia', 'suez', 'remondis', 'jj richards', 'solo resource recovery',
-  'sita', 'visy', 'bingo industries', 'toxfree', 'resourceco', 'repurpose it',
-  'city circle group', 'alex fraser group', 'polytrade recycling', 'iq renew',
-  'skm recycling', 'visy recycling', 'cleanaway recycling'
-];
-
-const DIGITAL_ENTERTAINMENT = [
-  'netflix', 'stan', 'binge', 'kayo', 'disney+', 'amazon prime',
-  'apple tv+', 'britbox', 'hayu', 'paramount+', 'shudder', 'acorn tv',
-  'youtube premium', 'curiositystream', 'docplay', 'iwonder',
-  'mubi', 'quickflix', 'foxtel now', 'fetch tv', 'telstra tv',
-  'optus sport', 'spotify', 'apple music', 'tidal', 'youtube music',
-  'deezer', 'soundcloud', 'audible', 'kindle unlimited', 'scribd',
-  'playstation plus', 'xbox game pass', 'nintendo switch online',
-  'google stadia', 'nvidia geforce now', 'ea play', 'uplay+',
-  'crunchyroll', 'animelab', 'funimation', 'twitch',
-  'neon', 'vimeo on demand', 'google play movies', 'microsoft movies & tv',
-  'abc iview', 'sbs on demand', '7plus', '9now', '10 play'
-];
-
-const INTERNET_SERVICE_PROVIDERS = [
-  'telstra', 'optus', 'tpg', 'iinet', 'aussie broadband', 'vodafone', 'dodo',
-  'belong', 'tangerine', 'mate', 'exetel', 'superloop', 'spintel', 'internode',
-  'ipstar', 'skymesh', 'activ8me', 'harbour isp', 'leaptel', 'southern phone',
-  'ant communications', 'nbn', 'national broadband network', 'starlink',
-  'foxtel broadband', 'amaysim', 'kogan internet', 'aldi mobile', 'boost mobile',
-  'lebara', 'lycamobile', 'woolworths mobile', 'coles mobile', 'bendigo telco',
-  'commander', 'aussie broadband', 'future broadband', 'tangerine telecom',
-  'moose mobile', 'numobile', 'circles.life', 'felix mobile', 'gomo'
-];
-
-const RECURRING_CONFIG = {
-  MIN_OCCURRENCES: 2,
-  MAX_INTERVAL_DAYS: 40,
-  AMOUNT_VARIATION_PERCENTAGE: 25,
-  MIN_TOTAL_SPAN_DAYS: 20
-};
 
 const categorizeExpense = (narrative: string): string => {
   const lowercaseNarrative = narrative.toLowerCase().replace(/\s+/g, '');
@@ -123,9 +25,8 @@ const categorizeExpense = (narrative: string): string => {
   if (matchCategory(['utility', 'energy', 'water', 'gas'], UTILITIES)) return 'Utilities';
   if (matchCategory(['entertainment', 'streaming', 'subscription'], DIGITAL_ENTERTAINMENT)) return 'Digital Entertainment';
   if (matchCategory(['internet', 'broadband', 'mobile'], INTERNET_SERVICE_PROVIDERS)) return 'Online Services';
-
-  if (lowercaseNarrative.includes('amazon')) return 'Shopping';
-  if (lowercaseNarrative.includes('paypal')) return 'Online Services';
+  if (matchCategory(['fastfood', 'restaurant', 'burger', 'pizza'], FAST_FOOD_RESTAURANTS)) return 'Eating Out';
+  if (matchCategory(['shopping', 'store', 'retail'], OTHER_GOODS)) return 'Other Goods';
 
   return 'Other';
 };

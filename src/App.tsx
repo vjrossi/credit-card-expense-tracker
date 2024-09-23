@@ -17,7 +17,7 @@ const App: React.FC = () => {
   const [recurringTransactions, setRecurringTransactions] = useState<Expense[]>([]);
   const [showDevPage, setShowDevPage] = useState<boolean>(false);
   const [hasLogs, setHasLogs] = useState<boolean>(false);
-  const [ignoreZeroTransactions, setIgnoreZeroTransactions] = useState<boolean>(false);
+  const [ignoreZeroTransactions, setIgnoreZeroTransactions] = useState<boolean>(true);
   const [isFileUploaded, setIsFileUploaded] = useState<boolean>(false);
 
   const clearDevLogs = useCallback(() => {

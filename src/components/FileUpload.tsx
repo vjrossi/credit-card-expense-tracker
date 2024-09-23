@@ -18,12 +18,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContentChange }) => {
   };
 
   return (
-    <div className="mb-4">
-      <label htmlFor="file-upload" className="block text-sm font-medium text-gray-700 mb-2">
-        Upload CSV File
-      </label>
+    <div>
       <input
-        id="file-upload"
         type="file"
         accept=".csv"
         onChange={handleFileChange}

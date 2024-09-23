@@ -30,7 +30,7 @@ const RecurringTransactionNotification: React.FC<RecurringTransactionNotificatio
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
         >
           {isExpanded ? 'Hide Details' : 'Show Details'}
         </button>
@@ -57,7 +57,7 @@ const RecurringTransactionNotification: React.FC<RecurringTransactionNotificatio
                         <span 
                           className="text-xs font-medium px-2 py-1 rounded-full inline-block"
                           style={{ 
-                            backgroundColor: categoryColorMap[transaction.Category],
+                            backgroundColor: categoryColorMap[transaction.Category] || '#808080',
                             color: 'white'
                           }}
                         >

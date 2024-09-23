@@ -27,9 +27,6 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
   const categories = Object.keys(categoriesWithExpenses);
   const totals = categories.map(cat => categoriesWithExpenses[cat].total);
 
-  console.log('Categories:', categories);
-  console.log('Totals:', totals);
-
   const categoryColors = [
     '#FF6384',
     '#36A2EB',
@@ -75,22 +72,19 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
       if (elements.length > 0) {
         const categoryIndex = elements[0].index;
         const newCategory = categories[categoryIndex];
-        console.log('Clicked category:', newCategory);
         setSelectedCategory(newCategory);
       }
     },
   };
 
   useEffect(() => {
-    console.log('Selected category:', selectedCategory);
-    if (selectedCategory) {
-      console.log('Transactions:', categoriesWithExpenses[selectedCategory].expenses);
-    }
-  }, [selectedCategory, categoriesWithExpenses]);
+    const newCategoryColorMap = categories.reduce((acc, category, index) => {
+      acc[category] = categoryColors[index % categoryColors.length];
+      return acc;
+    }, {} as Record<string, string>);
 
-  useEffect(() => {
-    setCategoryColorMap(categoryColorMap);
-  }, [categoryColorMap, setCategoryColorMap]);
+    setCategoryColorMap(newCategoryColorMap);
+  }, [categories, categoryColors, setCategoryColorMap]);
 
   const groupRecurringTransactions = (expenses: Expense[]): Record<string, Expense[]> => {
     return expenses

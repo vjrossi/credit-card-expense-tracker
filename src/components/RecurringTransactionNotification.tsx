@@ -9,7 +9,7 @@ interface RecurringTransactionNotificationProps {
 }
 
 const RecurringTransactionNotification: React.FC<RecurringTransactionNotificationProps> = ({ count, recurringTransactions, categoryColorMap }) => {
-  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (count === 0) return null;
 
@@ -23,32 +23,30 @@ const RecurringTransactionNotification: React.FC<RecurringTransactionNotificatio
 
   const recurringGroupCount = Object.keys(groupedTransactions).length;
 
-  const toggleGroup = (narrative: string) => {
-    setExpandedGroups(prev =>
-      prev.includes(narrative)
-        ? prev.filter(group => group !== narrative)
-        : [...prev, narrative]
-    );
-  };
-
   return (
-    <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded-lg shadow-md" role="alert">
+      <div 
+        className="flex justify-between items-center cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
         <div>
           <p className="font-bold">Recurring Transactions Detected</p>
-          <p>We've identified {recurringGroupCount} recurring transaction{recurringGroupCount !== 1 ? 's' : ''}. <span className="text-sm text-gray-600">(Click on an item to expand)</span></p>
+          <p>We've identified {recurringGroupCount} recurring transaction{recurringGroupCount !== 1 ? 's' : ''}.</p>
         </div>
+        <svg
+          className={`w-6 h-6 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
       </div>
-      <div className="mt-4 max-h-60 overflow-y-auto custom-scrollbar">
-        {Object.entries(groupedTransactions).map(([narrative, transactions]) => (
-          <div key={narrative} className="mb-4 last:mb-0">
-            <button
-              onClick={() => toggleGroup(narrative)}
-              className="w-full text-left font-semibold text-gray-700 mb-2 flex justify-between items-center cursor-pointer"
-            >
-              <span>{narrative}</span>
-            </button>
-            {expandedGroups.includes(narrative) && (
+      {isExpanded && (
+        <div className="mt-4 max-h-60 overflow-y-auto custom-scrollbar">
+          {Object.entries(groupedTransactions).map(([narrative, transactions]) => (
+            <div key={narrative} className="mb-4 last:mb-0">
+              <h3 className="font-semibold text-gray-700 mb-2">{narrative}</h3>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-yellow-200">
@@ -60,7 +58,7 @@ const RecurringTransactionNotification: React.FC<RecurringTransactionNotificatio
                 <tbody>
                   {transactions.map((transaction, index) => (
                     <tr key={index} className="border-b border-yellow-100 last:border-b-0">
-                      <td className="py-2 px-4">{format(new Date(transaction.Date), 'MMM d, yyyy')}</td>
+                      <td className="py-2 px-4">{transaction.Date}</td>
                       <td className="py-2 px-4 text-right">${transaction.DebitAmount.toFixed(2)}</td>
                       <td className="py-2 px-4 text-center">
                         <span
@@ -77,10 +75,10 @@ const RecurringTransactionNotification: React.FC<RecurringTransactionNotificatio
                   ))}
                 </tbody>
               </table>
-            )}
-          </div>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

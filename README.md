@@ -13,4 +13,5 @@ because company/store names are used for this purpose.
 - Click on a pie slice to see transactions for that category
 - Click on a category colour in the legend to toggle in/out that category
 - Hover over the timeline to see total spending amounts for certain days; click for transaction details.
+- Refresh the page (F5) to reset the app
 

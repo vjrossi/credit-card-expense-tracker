@@ -2,4 +2,14 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Give a quick breakdown of your bank statement. Does not store anydata, even in local storage.
+### Gives a quick breakdown by category, of your bank statement. Does not store any data, even in local storage.
+
+Download a CSV formatted bank statement and drag-drop it onto the app. Transaction categories are relevant to Australia,
+because company/store names are used for this purpose.
+
+- The app attempts to recognise recurring transactions
+- Hover over a pie slice to see total debits for that category
+- Click on a pie slice to see transactions for that category
+- Click on a category colour in the legend to toggle in/out that category
+- Hover over the timeline to see total spending amounts for certain days; click for transaction details.
+

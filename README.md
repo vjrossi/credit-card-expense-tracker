@@ -1,6 +1,7 @@
 # Quick Transaction Analyser
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Uses TypeScript, React, TailwindCSS
 
 ### Gives a quick breakdown by category, of your bank statement. Does not store any data, even in local storage.
 

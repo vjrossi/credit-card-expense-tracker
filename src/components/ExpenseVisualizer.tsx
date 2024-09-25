@@ -17,6 +17,8 @@ const categoryColors = [
 
 const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCategoryColorMap }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'description'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const categoriesWithExpenses = useMemo(() => {
     return expenses.reduce((acc, expense) => {
@@ -43,6 +45,28 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
   useEffect(() => {
     setCategoryColorMap(memoizedCategoryColorMap);
   }, [memoizedCategoryColorMap, setCategoryColorMap]);
+
+  const sortedExpenses = useMemo(() => {
+    if (!selectedCategory) return [];
+    return [...categoriesWithExpenses[selectedCategory].expenses].sort((a, b) => {
+      let comparison = 0;
+      switch (sortBy) {
+        case 'date':
+          comparison = new Date(b.Date).getTime() - new Date(a.Date).getTime();
+          break;
+        case 'amount':
+          comparison = b.DebitAmount - a.DebitAmount;
+          break;
+        case 'description':
+          comparison = a.Narrative.localeCompare(b.Narrative);
+          break;
+      }
+      // For description, we don't need to invert the comparison for ascending order
+      return sortBy === 'description'
+        ? (sortDirection === 'asc' ? comparison : comparison * -1)
+        : (sortDirection === 'asc' ? comparison * -1 : comparison);
+    });
+  }, [selectedCategory, categoriesWithExpenses, sortBy, sortDirection]);
 
   const data = {
     labels: categories,
@@ -80,8 +104,6 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
     },
   };
 
-  // Removed unused groupRecurringTransactions function
-
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col lg:flex-row justify-between gap-8">
@@ -100,10 +122,33 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
           <div className="border border-gray-300 rounded-lg p-4 h-96 flex flex-col">
             {selectedCategory ? (
               <>
+                <div className="mb-4 flex items-center">
+                  <label htmlFor="sort" className="mr-2 text-gray-700">Sort by:</label>
+                  <select
+                    id="sort"
+                    className="border border-gray-300 rounded px-2 py-1 mr-4"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as 'date' | 'amount' | 'description')}
+                  >
+                    <option value="date">Date</option>
+                    <option value="amount">Amount</option>
+                    <option value="description">Description</option>
+                  </select>
+                  <label htmlFor="direction" className="mr-2 text-gray-700">Order:</label>
+                  <select
+                    id="direction"
+                    className="border border-gray-300 rounded px-2 py-1"
+                    value={sortDirection}
+                    onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc')}
+                  >
+                    <option value="desc">Descending</option>
+                    <option value="asc">Ascending</option>
+                  </select>
+                </div>
                 <div className="overflow-y-auto flex-grow pr-4 custom-scrollbar">
                   <table className="w-full text-sm">
                     <tbody>
-                      {categoriesWithExpenses[selectedCategory].expenses.map((expense, index) => (
+                      {sortedExpenses.map((expense, index) => (
                         <tr key={index} className="border-b border-gray-200 last:border-b-0">
                           <td className="py-2 font-medium text-gray-600">{expense.Date}</td>
                           <td className="py-2 truncate max-w-[200px] text-gray-700">{expense.Narrative}</td>

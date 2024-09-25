@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Expense } from '../types/expense';
-import { format } from 'date-fns';
 
 interface RecurringTransactionNotificationProps {
   count: number;

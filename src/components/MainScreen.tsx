@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Accordion } from 'react-bootstrap';
+import { Accordion, Alert } from 'react-bootstrap';
 import FileUpload from './FileUpload';
 import ExpenseParser from './ExpenseParser';
 import ExpenseVisualizer from './ExpenseVisualizer';
@@ -20,6 +20,7 @@ const MainScreen: React.FC = () => {
   const [ignoreZeroTransactions, setIgnoreZeroTransactions] = useState<boolean>(true);
   const [isFileUploaded, setIsFileUploaded] = useState<boolean>(false);
   const [isUploadSectionExpanded, setIsUploadSectionExpanded] = useState<boolean>(true);
+  const [showUploadAlert, setShowUploadAlert] = useState<boolean>(false);
 
   const clearDevLogs = useCallback(() => {
     localStorage.removeItem('devLogs');
@@ -36,6 +37,7 @@ const MainScreen: React.FC = () => {
   const handleFileContentChange = useCallback((content: string) => {
     setFileContent(content);
     setIsFileUploaded(true);
+    setShowUploadAlert(true);
   }, []);
 
   return (
@@ -67,8 +69,10 @@ const MainScreen: React.FC = () => {
               </Accordion.Body>
             </Accordion.Item>
           </Accordion>
-          {isFileUploaded && (
-            <p className="alert alert-success mt-2">File uploaded successfully! You can upload a new file if needed.</p>
+          {showUploadAlert && (
+            <Alert variant="success" onClose={() => setShowUploadAlert(false)} dismissible className="mt-2">
+              File uploaded successfully! You can upload a new file if needed.
+            </Alert>
           )}
         </div>
         <ExpenseParser fileContent={fileContent} onParsedExpenses={handleParsedExpenses} ignoreZeroTransactions={ignoreZeroTransactions} />

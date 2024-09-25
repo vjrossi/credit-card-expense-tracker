@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { Accordion } from 'react-bootstrap';
 import FileUpload from './FileUpload';
 import ExpenseParser from './ExpenseParser';
 import ExpenseVisualizer from './ExpenseVisualizer';
@@ -8,7 +9,6 @@ import { CategoryColorMap } from '../types/categoryColorMap';
 import RecurringTransactionNotification from './RecurringTransactionNotification';
 import DevPage from './DevPage';
 import { logToDevPage } from '../utils/logger';
-import { Link } from 'react-router-dom';
 
 const MainScreen: React.FC = () => {
   const [fileContent, setFileContent] = useState<string>('');
@@ -19,6 +19,7 @@ const MainScreen: React.FC = () => {
   const [showDevPage, setShowDevPage] = useState<boolean>(false);
   const [ignoreZeroTransactions, setIgnoreZeroTransactions] = useState<boolean>(true);
   const [isFileUploaded, setIsFileUploaded] = useState<boolean>(false);
+  const [isUploadSectionExpanded, setIsUploadSectionExpanded] = useState<boolean>(true);
 
   const clearDevLogs = useCallback(() => {
     localStorage.removeItem('devLogs');
@@ -32,42 +33,43 @@ const MainScreen: React.FC = () => {
     setRecurringTransactions(parsedExpenses.filter(expense => expense.IsRecurring));
   }, []);
 
+  const handleFileContentChange = useCallback((content: string) => {
+    setFileContent(content);
+    setIsFileUploaded(true);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      <header className="bg-blue-600 text-white shadow-md">
-        <div className="container mx-auto py-4 px-6 flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Quick Transaction Analyser</h1>
-          <div>
-            {/* <button
-              onClick={() => setShowDevPage(!showDevPage)}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
-            >
-              {showDevPage ? 'Hide Dev Page' : 'Show Dev Page'}
-            </button> */}
-            {/* <Link to="/settings">
-              <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                Settings
-              </button>
-            </Link> */}
-          </div>
+    <div className="min-vh-100 bg-light d-flex flex-column">
+      <header className="bg-primary text-white shadow-sm">
+        <div className="container py-4 px-3 d-flex justify-content-between align-items-center">
+          <h1 className="h3 mb-0">Quick Transaction Analyser</h1>
         </div>
       </header>
-      <main className="flex-grow container mx-auto px-6 py-8">
+      <main className="flex-grow-1 container py-5">
         {showDevPage && <DevPage onClearLogs={clearDevLogs} />}
-        <div className="bg-white shadow-md rounded-lg p-6 mb-8 transition-all duration-300 hover:shadow-lg">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Upload Your Statement</h2>
-          <p className="text-gray-600 mb-4">
-            To use this app, please export a transaction list or statement from your bank in CSV format. Most banks offer this option in their online banking portal.
-          </p>
-          <FileUpload
-            onFileContentChange={(content) => {
-              setFileContent(content);
-              setIsFileUploaded(true);
-            }}
-            ignoreZeroTransactions={ignoreZeroTransactions}
-            onIgnoreZeroTransactionsChange={setIgnoreZeroTransactions}
-            isFileUploaded={isFileUploaded}
-          />
+        <div className="bg-white shadow-sm rounded p-4 mb-4">
+          <Accordion activeKey={isUploadSectionExpanded ? "0" : ""}>
+            <Accordion.Item eventKey="0">
+              <Accordion.Header onClick={() => setIsUploadSectionExpanded(!isUploadSectionExpanded)}>
+                Upload Your Statement
+              </Accordion.Header>
+              <Accordion.Body>
+                <p className="text-muted mb-4">
+                  To use this app, please export a transaction list or statement from your bank in CSV format. Most banks offer this option in their online banking portal.
+                </p>
+                <FileUpload
+                  onFileContentChange={handleFileContentChange}
+                  ignoreZeroTransactions={ignoreZeroTransactions}
+                  onIgnoreZeroTransactionsChange={setIgnoreZeroTransactions}
+                  isFileUploaded={isFileUploaded}
+                  setIsUploadSectionExpanded={setIsUploadSectionExpanded}
+                />
+              </Accordion.Body>
+            </Accordion.Item>
+          </Accordion>
+          {isFileUploaded && (
+            <p className="alert alert-success mt-2">File uploaded successfully! You can upload a new file if needed.</p>
+          )}
         </div>
         <ExpenseParser fileContent={fileContent} onParsedExpenses={handleParsedExpenses} ignoreZeroTransactions={ignoreZeroTransactions} />
         {expenses.length > 0 && (
@@ -78,15 +80,15 @@ const MainScreen: React.FC = () => {
               categoryColorMap={categoryColorMap}
             />
             <TransactionTimespan expenses={expenses} categoryColorMap={categoryColorMap} />
-            <div className="bg-white shadow-md rounded-lg p-6 transition-all duration-300 hover:shadow-lg">
+            <div className="bg-white shadow-sm rounded p-4">
               <ExpenseVisualizer expenses={expenses} setCategoryColorMap={setCategoryColorMap} />
             </div>
           </>
         )}
       </main>
-      <footer className="bg-gray-800 text-white py-4">
-        <div className="container mx-auto px-6 text-center">
-          <p>&copy; 2024 Valentino Rossi. All rights reserved.</p>
+      <footer className="bg-dark text-white py-3">
+        <div className="container text-center">
+          <p className="mb-0">&copy; 2024 Valentino Rossi. All rights reserved.</p>
         </div>
       </footer>
     </div>

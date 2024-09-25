@@ -1,13 +1,15 @@
 import React, { ChangeEvent, useState, DragEvent } from 'react';
+import { Form } from 'react-bootstrap';
 
 interface FileUploadProps {
   onFileContentChange: (content: string) => void;
   ignoreZeroTransactions: boolean;
   onIgnoreZeroTransactionsChange: (ignore: boolean) => void;
   isFileUploaded: boolean;
+  setIsUploadSectionExpanded: (isExpanded: boolean) => void;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ onFileContentChange, ignoreZeroTransactions, onIgnoreZeroTransactionsChange, isFileUploaded }) => {
+const FileUpload: React.FC<FileUploadProps> = ({ onFileContentChange, ignoreZeroTransactions, onIgnoreZeroTransactionsChange, isFileUploaded, setIsUploadSectionExpanded }) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -17,6 +19,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContentChange, ignoreZero
       reader.onload = (e) => {
         const content = e.target?.result as string;
         onFileContentChange(content);
+        setIsUploadSectionExpanded(false);
       };
       reader.readAsText(file);
     }
@@ -46,48 +49,45 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContentChange, ignoreZero
       reader.onload = (e) => {
         const content = e.target?.result as string;
         onFileContentChange(content);
+        setIsUploadSectionExpanded(false);
       };
       reader.readAsText(file);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full">
-      <div className="flex items-center justify-between w-full mb-4">
-        <label htmlFor="ignore-zero-transactions" className="inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            id="ignore-zero-transactions"
-            className="sr-only peer"
-            checked={ignoreZeroTransactions}
-            onChange={(e) => onIgnoreZeroTransactionsChange(e.target.checked)}
-            disabled={isFileUploaded}
-          />
-          <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-          <span className="ml-3 text-sm font-medium text-gray-700 peer-disabled:text-gray-400">Ignore $0 transactions</span>
-        </label>
-      </div>
+    <div>
+      <Form.Check
+        type="switch"
+        id="ignore-zero-transactions"
+        label="Ignore zero transactions"
+        checked={ignoreZeroTransactions}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onIgnoreZeroTransactionsChange(e.target.checked)}
+        className="mb-3"
+      />
       <label
         htmlFor="file-upload"
-        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+        className={`d-flex flex-column align-items-center justify-content-center p-5 border border-2 rounded ${
+          isDragging ? 'border-primary bg-light' : 'border-secondary'
+        } bg-light`}
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-          <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-          </svg>
-          <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-          <p className="text-xs text-gray-500">CSV file only</p>
+        <div className="text-center">
+          <i className="bi bi-cloud-upload fs-1 mb-3"></i>
+          <p className="mb-2">
+            <span className="fw-bold">Click to upload</span> or drag and drop
+          </p>
+          <p className="text-muted small">CSV file only</p>
         </div>
         <input
           id="file-upload"
           type="file"
           accept=".csv"
           onChange={handleFileChange}
-          className="hidden"
+          className="d-none"
         />
       </label>
     </div>

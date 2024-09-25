@@ -21,6 +21,7 @@ const MainScreen: React.FC = () => {
   const [isFileUploaded, setIsFileUploaded] = useState<boolean>(false);
   const [isUploadSectionExpanded, setIsUploadSectionExpanded] = useState<boolean>(true);
   const [showUploadAlert, setShowUploadAlert] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const clearDevLogs = useCallback(() => {
     localStorage.removeItem('devLogs');
@@ -28,16 +29,26 @@ const MainScreen: React.FC = () => {
   }, []);
 
   const handleParsedExpenses = useCallback((parsedExpenses: Expense[], recurringCount: number) => {
+    setErrorMessage(null);
     logToDevPage(`Received ${parsedExpenses.length} parsed expenses with ${recurringCount} recurring transactions`);
     setExpenses(parsedExpenses);
     setRecurringCount(recurringCount);
     setRecurringTransactions(parsedExpenses.filter(expense => expense.IsRecurring));
+    setShowUploadAlert(true); // Show success message only after successful parsing
+  }, []);
+
+  const handleParseError = useCallback((error: string) => {
+    setErrorMessage(error);
+    setExpenses([]);
+    setRecurringCount(0);
+    setRecurringTransactions([]);
   }, []);
 
   const handleFileContentChange = useCallback((content: string) => {
     setFileContent(content);
     setIsFileUploaded(true);
-    setShowUploadAlert(true);
+    setShowUploadAlert(false); // Reset the upload alert
+    setErrorMessage(null); // Reset the error message
   }, []);
 
   return (
@@ -69,13 +80,18 @@ const MainScreen: React.FC = () => {
               </Accordion.Body>
             </Accordion.Item>
           </Accordion>
-          {showUploadAlert && (
+          {showUploadAlert && !errorMessage && (
             <Alert variant="success" onClose={() => setShowUploadAlert(false)} dismissible className="mt-2">
-              File uploaded successfully! You can upload a new file if needed.
+              File uploaded and parsed successfully! You can upload a new file if needed.
+            </Alert>
+          )}
+          {errorMessage && (
+            <Alert variant="danger" onClose={() => setErrorMessage(null)} dismissible className="mt-2">
+              {errorMessage}
             </Alert>
           )}
         </div>
-        <ExpenseParser fileContent={fileContent} onParsedExpenses={handleParsedExpenses} ignoreZeroTransactions={ignoreZeroTransactions} />
+        <ExpenseParser fileContent={fileContent} onParsedExpenses={handleParsedExpenses} onParseError={handleParseError} ignoreZeroTransactions={ignoreZeroTransactions} />
         {expenses.length > 0 && (
           <>
             <RecurringTransactionNotification

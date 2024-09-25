@@ -7,6 +7,7 @@ import { GROCERY_STORES, INSURANCE_COMPANIES, UTILITIES, DIGITAL_ENTERTAINMENT, 
 interface ExpenseParserProps {
   fileContent: string;
   onParsedExpenses: (expenses: Expense[], recurringCount: number) => void;
+  onParseError: (error: string) => void;
   ignoreZeroTransactions: boolean;
 }
 
@@ -31,13 +32,18 @@ const categorizeExpense = (narrative: string): string => {
   return 'Other';
 };
 
-const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpenses, ignoreZeroTransactions }) => {
+const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpenses, onParseError, ignoreZeroTransactions }) => {
   useEffect(() => {
     if (fileContent) {
       Papa.parse(fileContent, {
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
+          if (results.errors.length > 0) {
+            onParseError("Error reading the file. It must be in CSV format.");
+            return;
+          }
+
           const parsedData = results.data
             .map((row: any) => {
               const dateString = row.Date || '';
@@ -59,6 +65,7 @@ const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpe
               return expense;
             })
             .filter((expense): expense is Expense => expense !== null);
+
           // Flag recurring transactions
           const dataWithRecurring = identifyRecurringTransactions(parsedData);
           // Count recurring transactions
@@ -67,10 +74,11 @@ const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpe
         },
         error: (error) => {
           console.error('Papa Parse error:', error);
+          onParseError("Error reading the file. It must be in CSV format.");
         },
       });
     }
-  }, [fileContent, onParsedExpenses, ignoreZeroTransactions]);
+  }, [fileContent, onParsedExpenses, onParseError, ignoreZeroTransactions]);
 
   return null; // Remove the rendering of parsed expenses
 };

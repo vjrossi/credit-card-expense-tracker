@@ -15,8 +15,7 @@ because company/store names are used for this purpose.
 - Hover over the timeline to see total spending amounts for certain days; click for transaction details.
 - Refresh the page (F5) to reset the app
 
-<img width="940" alt="image" src="https://github.com/user-attachments/assets/af2627ac-cd07-40a5-8ab6-360f54d2ca99">
-
+![image](https://github.com/user-attachments/assets/553e6544-3b45-484d-98dc-d16927bcdddd)
 
 Try it out right now at https://vjrossi.github.io/credit-card-expense-tracker/
 

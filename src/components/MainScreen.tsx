@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Accordion, Alert } from 'react-bootstrap';
+import { Alert } from 'react-bootstrap';
 import FileUpload from './FileUpload';
 import ExpenseParser from './ExpenseParser';
 import ExpenseVisualizer from './ExpenseVisualizer';
@@ -80,8 +80,7 @@ const MainScreen: React.FC = () => {
             {errorMessage}
           </Alert>
         )}
-        <ExpenseParser fileContent={fileContent} onParsedExpenses={handleParsedExpenses} onParseError={handleParseError} ignoreZeroTransactions={ignoreZeroTransactions} />
-        {expenses.length > 0 && (
+        <ExpenseParser fileContent={fileContent} onParsedExpenses={handleParsedExpenses} onParseError={handleParseError} ignoreZeroTransactions={ignoreZeroTransactions} />        {expenses.length > 0 && (
           <>
             <RecurringTransactionNotification
               count={recurringCount}
@@ -90,8 +89,8 @@ const MainScreen: React.FC = () => {
               isExpanded={isRecurringTransactionsExpanded}
               setIsExpanded={setIsRecurringTransactionsExpanded}
             />
-            <TransactionTimespan 
-              expenses={expenses} 
+            <TransactionTimespan
+              expenses={expenses}
               categoryColorMap={categoryColorMap}
               isExpanded={isTransactionTimespanExpanded}
               setIsExpanded={setIsTransactionTimespanExpanded}

@@ -80,7 +80,7 @@ const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpe
     }
   }, [fileContent, onParsedExpenses, onParseError, ignoreZeroTransactions]);
 
-  return null; // Remove the rendering of parsed expenses
+  return null;
 };
 
 export const identifyRecurringTransactions = (expenses: Expense[]): Expense[] => {
@@ -125,7 +125,7 @@ export const identifyRecurringTransactions = (expenses: Expense[]): Expense[] =>
       const isEveryTwoMonths = intervals.every(interval =>
         (interval >= 56 && interval <= 64)
       );
-      
+
       // Check for similar amounts (allowing 25% variation)
       const amounts = transactions.map(t => t.DebitAmount);
       const averageAmount = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;

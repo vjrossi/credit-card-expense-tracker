@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Expense } from '../types/expense';
 import { Accordion } from 'react-bootstrap';
 
@@ -27,11 +27,34 @@ const RecurringTransactionNotification: React.FC<RecurringTransactionNotificatio
     return acc;
   }, {} as Record<string, Expense[]>);
 
+  // Create a summary of categories
+  const categorySummary = Object.values(groupedTransactions).reduce((acc, transactions) => {
+    const category = transactions[0].Category;
+    acc[category] = (acc[category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
   return (
     <Accordion activeKey={isExpanded ? '0' : ''}>
       <Accordion.Item eventKey="0">
         <Accordion.Header onClick={() => setIsExpanded(!isExpanded)}>
-          Recurring Transactions Detected
+          <div>
+            <div>Recurring Transactions Detected</div>
+            <div className="flex flex-wrap gap-1 mt-2">
+              {Object.entries(categorySummary).map(([category, count]) => (
+                <span
+                  key={category}
+                  className="text-xs font-medium px-2 py-1 rounded-full inline-block"
+                  style={{
+                    backgroundColor: categoryColorMap[category] || '#808080',
+                    color: 'white'
+                  }}
+                >
+                  {category} {count > 1 ? `(x${count})` : ''}
+                </span>
+              ))}
+            </div>
+          </div>
         </Accordion.Header>
         <Accordion.Body>
           <div className="mt-4 max-h-60 overflow-y-auto custom-scrollbar">

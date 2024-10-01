@@ -19,9 +19,11 @@ const MainScreen: React.FC = () => {
   const [showDevPage, setShowDevPage] = useState<boolean>(false);
   const [ignoreZeroTransactions, setIgnoreZeroTransactions] = useState<boolean>(true);
   const [isFileUploaded, setIsFileUploaded] = useState<boolean>(false);
-  const [isUploadSectionExpanded, setIsUploadSectionExpanded] = useState<boolean>(true);
+  const [isFileUploadExpanded, setIsFileUploadExpanded] = useState(true);
   const [showUploadAlert, setShowUploadAlert] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isRecurringTransactionsExpanded, setIsRecurringTransactionsExpanded] = useState(false);
+  const [isTransactionTimespanExpanded, setIsTransactionTimespanExpanded] = useState(false);
 
   const clearDevLogs = useCallback(() => {
     localStorage.removeItem('devLogs');
@@ -58,39 +60,26 @@ const MainScreen: React.FC = () => {
           <h1 className="h3 mb-0">Quick Transaction Analyser</h1>
         </div>
       </header>
-      <main className="flex-grow-1 container py-5">
+      <main className="flex-grow-1 container pt-5">
         {showDevPage && <DevPage onClearLogs={clearDevLogs} />}
-        <div className="bg-white shadow-sm rounded p-4 mb-4">
-          <Accordion activeKey={isUploadSectionExpanded ? "0" : ""}>
-            <Accordion.Item eventKey="0">
-              <Accordion.Header onClick={() => setIsUploadSectionExpanded(!isUploadSectionExpanded)}>
-                Upload Your Statement
-              </Accordion.Header>
-              <Accordion.Body>
-                <p className="text-muted mb-4">
-                  To use this app, please export a transaction list or statement from your bank in CSV format. Most banks offer this option in their online banking portal.
-                </p>
-                <FileUpload
-                  onFileContentChange={handleFileContentChange}
-                  ignoreZeroTransactions={ignoreZeroTransactions}
-                  onIgnoreZeroTransactionsChange={setIgnoreZeroTransactions}
-                  isFileUploaded={isFileUploaded}
-                  setIsUploadSectionExpanded={setIsUploadSectionExpanded}
-                />
-              </Accordion.Body>
-            </Accordion.Item>
-          </Accordion>
-          {showUploadAlert && !errorMessage && (
-            <Alert variant="success" onClose={() => setShowUploadAlert(false)} dismissible className="mt-2">
-              File uploaded and parsed successfully! You can upload a new file if needed.
-            </Alert>
-          )}
-          {errorMessage && (
-            <Alert variant="danger" onClose={() => setErrorMessage(null)} dismissible className="mt-2">
-              {errorMessage}
-            </Alert>
-          )}
-        </div>
+        <FileUpload
+          onFileContentChange={handleFileContentChange}
+          ignoreZeroTransactions={ignoreZeroTransactions}
+          onIgnoreZeroTransactionsChange={setIgnoreZeroTransactions}
+          isFileUploaded={isFileUploaded}
+          isExpanded={isFileUploadExpanded}
+          setIsExpanded={setIsFileUploadExpanded}
+        />
+        {showUploadAlert && !errorMessage && (
+          <Alert variant="success" onClose={() => setShowUploadAlert(false)} dismissible className="mt-2">
+            File uploaded and parsed successfully! You can upload a new file if needed.
+          </Alert>
+        )}
+        {errorMessage && (
+          <Alert variant="danger" onClose={() => setErrorMessage(null)} dismissible className="mt-2">
+            {errorMessage}
+          </Alert>
+        )}
         <ExpenseParser fileContent={fileContent} onParsedExpenses={handleParsedExpenses} onParseError={handleParseError} ignoreZeroTransactions={ignoreZeroTransactions} />
         {expenses.length > 0 && (
           <>
@@ -98,8 +87,15 @@ const MainScreen: React.FC = () => {
               count={recurringCount}
               recurringTransactions={recurringTransactions}
               categoryColorMap={categoryColorMap}
+              isExpanded={isRecurringTransactionsExpanded}
+              setIsExpanded={setIsRecurringTransactionsExpanded}
             />
-            <TransactionTimespan expenses={expenses} categoryColorMap={categoryColorMap} />
+            <TransactionTimespan 
+              expenses={expenses} 
+              categoryColorMap={categoryColorMap}
+              isExpanded={isTransactionTimespanExpanded}
+              setIsExpanded={setIsTransactionTimespanExpanded}
+            />
             <div className="bg-white shadow-sm rounded p-4">
               <ExpenseVisualizer expenses={expenses} setCategoryColorMap={setCategoryColorMap} />
             </div>

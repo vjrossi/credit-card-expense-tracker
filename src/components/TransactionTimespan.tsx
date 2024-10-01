@@ -3,13 +3,16 @@ import { Expense } from '../types/expense';
 import { parse, format, differenceInDays, addDays, isValid } from 'date-fns';
 import TransactionTooltip from './TransactionTooltip';
 import { CategoryColorMap } from '../types/categoryColorMap';
+import { Accordion } from 'react-bootstrap';
 
 interface TransactionTimespanProps {
   expenses: Expense[];
   categoryColorMap: CategoryColorMap;
+  isExpanded: boolean;
+  setIsExpanded: (isExpanded: boolean) => void;
 }
 
-const TransactionTimespan: React.FC<TransactionTimespanProps> = ({ expenses, categoryColorMap }) => {
+const TransactionTimespan: React.FC<TransactionTimespanProps> = ({ expenses, categoryColorMap, isExpanded, setIsExpanded }) => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   if (expenses.length === 0) return null;
@@ -68,35 +71,41 @@ const TransactionTimespan: React.FC<TransactionTimespanProps> = ({ expenses, cat
   });
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6 mb-8 transition-all duration-300 hover:shadow-lg">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800">Transaction Timeline</h2>
-      <div className="flex items-center justify-between">
-        <div className="text-center">
-          <p className="text-sm text-gray-500">Start Date</p>
-          <p className="text-lg font-semibold text-gray-800">{formatDate(startDate)}</p>
-        </div>
-        <div className="flex-grow mx-4 relative custom-scrollbar">
-          <div className="h-12 bg-blue-100 rounded-full overflow-hidden flex items-end justify-between px-2">
-            {timelineMarkers}
+    <Accordion activeKey={isExpanded ? '0' : ''}>
+      <Accordion.Item eventKey="0">
+        <Accordion.Header onClick={() => setIsExpanded(!isExpanded)}>
+          Transaction Timeline
+        </Accordion.Header>
+        <Accordion.Body>
+          <div className="flex items-center justify-between">
+            <div className="text-center">
+              <p className="text-sm text-gray-500">Start Date</p>
+              <p className="text-lg font-semibold text-gray-800">{formatDate(startDate)}</p>
+            </div>
+            <div className="flex-grow mx-4 relative custom-scrollbar">
+              <div className="h-12 bg-blue-100 rounded-full overflow-hidden flex items-end justify-between px-2">
+                {timelineMarkers}
+              </div>
+              {selectedDate && (
+                <TransactionTooltip
+                  transactions={expensesByDate[selectedDate].transactions}
+                  date={selectedDate}
+                  onClose={() => setSelectedDate(null)}
+                  categoryColorMap={categoryColorMap}
+                />
+              )}
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-500">End Date</p>
+              <p className="text-lg font-semibold text-gray-800">{formatDate(endDate)}</p>
+            </div>
           </div>
-          {selectedDate && (
-            <TransactionTooltip
-              transactions={expensesByDate[selectedDate].transactions}
-              date={selectedDate}
-              onClose={() => setSelectedDate(null)}
-              categoryColorMap={categoryColorMap}
-            />
-          )}
-        </div>
-        <div className="text-center">
-          <p className="text-sm text-gray-500">End Date</p>
-          <p className="text-lg font-semibold text-gray-800">{formatDate(endDate)}</p>
-        </div>
-      </div>
-      <p className="text-center mt-4 text-gray-600">
-        {daysDifference} days
-      </p>
-    </div>
+          <p className="text-center mt-4 text-gray-600">
+            {daysDifference} days
+          </p>
+        </Accordion.Body>
+      </Accordion.Item>
+    </Accordion>
   );
 };
 

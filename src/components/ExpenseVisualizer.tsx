@@ -19,6 +19,8 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'description'>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchAllCategories, setSearchAllCategories] = useState(false);
 
   const categoriesWithExpenses = useMemo(() => {
     return expenses.reduce((acc, expense) => {
@@ -46,9 +48,21 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
     setCategoryColorMap(memoizedCategoryColorMap);
   }, [memoizedCategoryColorMap, setCategoryColorMap]);
 
+  const filteredExpenses = useMemo(() => {
+    let expensesToSearch = searchAllCategories ? expenses : (selectedCategory ? categoriesWithExpenses[selectedCategory].expenses : []);
+
+    return expensesToSearch.filter(expense => {
+      if (!searchQuery) return true;
+
+      const lowercaseQuery = searchQuery.toLowerCase();
+      return expense.Narrative.toLowerCase().includes(lowercaseQuery) ||
+        expense.Date.includes(searchQuery) ||
+        expense.DebitAmount.toString().includes(searchQuery);
+    });
+  }, [expenses, selectedCategory, categoriesWithExpenses, searchQuery, searchAllCategories]);
+
   const sortedExpenses = useMemo(() => {
-    if (!selectedCategory) return [];
-    return [...categoriesWithExpenses[selectedCategory].expenses].sort((a, b) => {
+    return [...filteredExpenses].sort((a, b) => {
       let comparison = 0;
       switch (sortBy) {
         case 'date':
@@ -66,7 +80,7 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
         ? (sortDirection === 'asc' ? comparison : comparison * -1)
         : (sortDirection === 'asc' ? comparison * -1 : comparison);
     });
-  }, [selectedCategory, categoriesWithExpenses, sortBy, sortDirection]);
+  }, [filteredExpenses, sortBy, sortDirection]);
 
   const data = {
     labels: categories,
@@ -117,11 +131,33 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
         </div>
         <div className="w-full lg:w-1/2">
           <h2 className="text-2xl font-bold mb-4 text-gray-800">
-            {selectedCategory ? `${selectedCategory} Transactions` : 'Transactions by Category'}
+            {searchAllCategories ? 'All Transactions' : (selectedCategory ? `${selectedCategory} Transactions` : 'Transactions by Category')}
           </h2>
           <div className="border border-gray-300 rounded-lg p-4 h-96 flex flex-col">
             {selectedCategory ? (
               <>
+                <div className="mb-4 flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Search by keyword, date, or amount..."
+                      className="border border-gray-300 rounded px-2 py-1 flex-grow"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="searchAllCategories"
+                      checked={searchAllCategories}
+                      onChange={(e) => setSearchAllCategories(e.target.checked)}
+                    />
+                    <label htmlFor="searchAllCategories" className="text-sm text-gray-700">
+                      Search across all categories
+                    </label>
+                  </div>
+                </div>
                 <div className="mb-4 flex items-center">
                   <label htmlFor="sort" className="mr-2 text-gray-700">Sort by:</label>
                   <select

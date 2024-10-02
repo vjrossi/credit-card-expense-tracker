@@ -10,6 +10,7 @@ import { CategoryColorMap } from '../types/categoryColorMap';
 import RecurringTransactionNotification from './RecurringTransactionNotification';
 import DevPage from './DevPage';
 import { logToDevPage } from '../utils/logger';
+import { DUMMY_CSV_DATA } from '../constants/dummyData';
 
 const MainScreen: React.FC = () => {
   const [fileContent, setFileContent] = useState<string>('');
@@ -54,6 +55,10 @@ const MainScreen: React.FC = () => {
     setErrorMessage(null); // Reset the error message
   }, []);
 
+  const handleImportDummyData = useCallback(() => {
+    handleFileContentChange(DUMMY_CSV_DATA);
+  }, [handleFileContentChange]);
+
   return (
     <div className="min-vh-100 bg-light d-flex flex-column">
       <header className="bg-primary text-white shadow-sm">
@@ -84,6 +89,7 @@ const MainScreen: React.FC = () => {
           isFileUploaded={isFileUploaded}
           isExpanded={isFileUploadExpanded}
           setIsExpanded={setIsFileUploadExpanded}
+          onImportDummyData={handleImportDummyData}
         />
         {showUploadAlert && !errorMessage && (
           <Alert variant="success" onClose={() => setShowUploadAlert(false)} dismissible className="mt-2">

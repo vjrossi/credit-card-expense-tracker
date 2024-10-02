@@ -1,7 +1,5 @@
 import React from 'react';
 import { HashRouter as Router, Route, Routes } from 'react-router-dom';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { FaInfoCircle } from 'react-icons/fa';
 import MainScreen from './components/MainScreen';
 import SettingsPage from './components/SettingsPage';
 

@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useState, DragEvent } from 'react';
-import { Form, Accordion, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Form, Accordion, OverlayTrigger, Tooltip, Button } from 'react-bootstrap';
 import { FaInfoCircle } from 'react-icons/fa';
-
+import { DUMMY_CSV_DATA } from '../constants/dummyData';
 interface FileUploadProps {
   onFileContentChange: (content: string) => void;
   ignoreZeroTransactions: boolean;
@@ -9,6 +9,7 @@ interface FileUploadProps {
   isFileUploaded: boolean;
   isExpanded: boolean;
   setIsExpanded: (isExpanded: boolean) => void;
+  onImportDummyData: () => void;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -17,7 +18,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
   onIgnoreZeroTransactionsChange,
   isFileUploaded,
   isExpanded,
-  setIsExpanded
+  setIsExpanded,
+  onImportDummyData
 }) => {
   const [isDragging, setIsDragging] = useState(false);
 
@@ -120,6 +122,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
               className="d-none"
             />
           </label>
+          <Button
+            variant="secondary"
+            onClick={onImportDummyData}
+            className="mt-3"
+          >
+            Use Sample Data
+          </Button>
         </Accordion.Body>
       </Accordion.Item>
     </Accordion>

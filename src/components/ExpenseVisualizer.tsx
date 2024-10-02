@@ -3,6 +3,7 @@ import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Expense } from '../types/expense';
 import { CategoryColorMap } from '../types/categoryColorMap';
+import { FaArrowUp, FaArrowDown } from 'react-icons/fa'; // Add this import
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -82,6 +83,10 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
     });
   }, [filteredExpenses, sortBy, sortDirection]);
 
+  const toggleSortDirection = () => {
+    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+  };
+
   const data = {
     labels: categories,
     datasets: [
@@ -119,86 +124,79 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
   };
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col lg:flex-row justify-between gap-8">
-        <div className="w-full lg:w-1/2">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Expenses by Category</h2>
-          <div className="h-96 flex items-center justify-center">
-            <div className="w-[90%] h-[90%]">
-              <Pie data={data} options={options} />
-            </div>
+    <div className="flex flex-col lg:flex-row justify-between gap-8">
+      <div className="w-full lg:w-1/2">
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Expenses by Category</h2>
+        <div className="h-96 flex items-center justify-center">
+          <div className="w-[90%] h-[90%]">
+            <Pie data={data} options={options} />
           </div>
         </div>
-        <div className="w-full lg:w-1/2">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">
-            {searchAllCategories ? 'All Transactions' : (selectedCategory ? `${selectedCategory} Transactions` : 'Transactions by Category')}
-          </h2>
-          <div className="border border-gray-300 rounded-lg p-4 h-96 flex flex-col">
-            {selectedCategory ? (
-              <>
-                <div className="mb-4 flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      placeholder="Search by keyword, date, or amount..."
-                      className="border border-gray-300 rounded px-2 py-1 flex-grow"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="searchAllCategories"
-                      checked={searchAllCategories}
-                      onChange={(e) => setSearchAllCategories(e.target.checked)}
-                    />
-                    <label htmlFor="searchAllCategories" className="text-sm text-gray-700">
-                      Search across all categories
-                    </label>
-                  </div>
+      </div>
+      <div className="w-full lg:w-1/2">
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">
+          {searchAllCategories ? 'All Transactions' : (selectedCategory ? `${selectedCategory} Transactions` : 'Transactions by Category')}
+        </h2>
+        <div className="border border-gray-300 rounded-lg p-4 h-96 flex flex-col">
+          {selectedCategory ? (
+            <>
+              <div className="mb-3 flex flex-col">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Search by keyword, date, or amount..."
+                    className="border border-gray-300 rounded px-2 py-1 flex-grow"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <input
+                    type="checkbox"
+                    id="searchAllCategories"
+                    checked={searchAllCategories}
+                    onChange={(e) => setSearchAllCategories(e.target.checked)}
+                  />
+                  <label htmlFor="searchAllCategories" className="text-sm text-gray-700">
+                    Search all categories
+                  </label>
                 </div>
-                <div className="mb-4 flex items-center">
-                  <label htmlFor="sort" className="mr-2 text-gray-700">Sort by:</label>
-                  <select
-                    id="sort"
-                    className="border border-gray-300 rounded px-2 py-1 mr-4"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'date' | 'amount' | 'description')}
-                  >
-                    <option value="date">Date</option>
-                    <option value="amount">Amount</option>
-                    <option value="description">Description</option>
-                  </select>
-                  <label htmlFor="direction" className="mr-2 text-gray-700">Order:</label>
-                  <select
-                    id="direction"
-                    className="border border-gray-300 rounded px-2 py-1"
-                    value={sortDirection}
-                    onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc')}
-                  >
-                    <option value="desc">Descending</option>
-                    <option value="asc">Ascending</option>
-                  </select>
-                </div>
-                <div className="overflow-y-auto flex-grow pr-4 custom-scrollbar">
-                  <table className="w-full text-sm">
-                    <tbody>
-                      {sortedExpenses.map((expense, index) => (
-                        <tr key={index} className="border-b border-gray-200 last:border-b-0">
-                          <td className="py-2 font-medium text-gray-600">{expense.Date}</td>
-                          <td className="py-2 truncate max-w-[200px] text-gray-700">{expense.Narrative}</td>
-                          <td className="py-2 text-right font-medium text-gray-800">${expense.DebitAmount.toFixed(2)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            ) : (
-              <p className="text-gray-600 text-center mt-4">Click on a category in the pie chart to see transactions.</p>
-            )}
-          </div>
+              </div>
+              <div className="mb-4 flex items-center">
+                <label htmlFor="sort" className="text-gray-700 mr-2">Order by:</label>
+                <select
+                  id="sort"
+                  className="border border-gray-300 rounded px-4 py-1"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'date' | 'amount' | 'description')}
+                >
+                  <option value="date">Date</option>
+                  <option value="amount">Amount</option>
+                  <option value="description">Description</option>
+                </select>
+                <button
+                  onClick={toggleSortDirection}
+                  className="p-2 rounded hover:bg-gray-100"
+                  aria-label={`Sort ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
+                >
+                  {sortDirection === 'asc' ? <FaArrowUp /> : <FaArrowDown />}
+                </button>
+              </div>
+              <div className="overflow-y-auto flex-grow pr-4 custom-scrollbar">
+                <table className="w-full text-xs"> {/* Changed from text-sm to text-xs */}
+                  <tbody>
+                    {sortedExpenses.map((expense, index) => (
+                      <tr key={index} className="border-b border-gray-200 last:border-b-0">
+                        <td className="py-2 font-medium text-gray-800">{expense.Date}</td>
+                        <td className="py-2 truncate max-w-[200px] text-gray-800">{expense.Narrative}</td>
+                        <td className="py-2 text-right font-medium text-gray-800">${expense.DebitAmount.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <p className="text-gray-600 text-center mt-4">Click on a category in the pie chart to see transactions.</p>
+          )}
         </div>
       </div>
     </div>

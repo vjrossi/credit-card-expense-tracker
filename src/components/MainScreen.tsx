@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { Alert } from 'react-bootstrap';
+import { Alert, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { FaInfoCircle } from 'react-icons/fa';
 import FileUpload from './FileUpload';
 import ExpenseParser from './ExpenseParser';
 import ExpenseVisualizer from './ExpenseVisualizer';
@@ -57,7 +58,21 @@ const MainScreen: React.FC = () => {
     <div className="min-vh-100 bg-light d-flex flex-column">
       <header className="bg-primary text-white shadow-sm">
         <div className="container py-4 px-3 d-flex justify-content-between align-items-center">
-          <h1 className="h3 mb-0">Quick Transaction Analyser</h1>
+          <h1 className="h3 mb-0 d-flex align-items-center">
+            Quick Transaction Analyser
+            <OverlayTrigger
+              placement="right"
+              overlay={
+                <Tooltip id="category-info-tooltip">
+                  Note: The built-in categories are weighted towards Australian stores and businesses, but many will apply elsewhere.
+                </Tooltip>
+              }
+            >
+              <span className="ms-2">
+                <FaInfoCircle />
+              </span>
+            </OverlayTrigger>
+          </h1>
         </div>
       </header>
       <main className="flex-grow-1 container pt-5">

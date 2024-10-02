@@ -29,7 +29,7 @@ const TransactionTimespan: React.FC<TransactionTimespanProps> = ({ expenses, cat
   const endDate = new Date(Math.max(...dates.map(date => date.getTime())));
 
   const formatDate = (date: Date) => {
-    return format(date, 'MMM d, yyyy');
+    return format(date, 'dd-MM-yyyy');
   };
 
   const daysDifference = differenceInDays(endDate, startDate);

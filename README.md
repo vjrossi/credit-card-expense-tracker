@@ -1,5 +1,7 @@
 # Quick Transaction Analyser
 
+Try it out right now at https://vjrossi.github.io/credit-card-expense-tracker/
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 Uses TypeScript, React, TailwindCSS
 
@@ -17,6 +19,5 @@ because company/store names are used for this purpose.
 
 ![image](https://github.com/user-attachments/assets/553e6544-3b45-484d-98dc-d16927bcdddd)
 
-Try it out right now at https://vjrossi.github.io/credit-card-expense-tracker/
 
 

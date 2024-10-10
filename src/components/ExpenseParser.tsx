@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import Papa from 'papaparse';
 import { Expense } from '../types/expense';
-import { parse, differenceInDays, isValid } from 'date-fns';
+import { parse, differenceInDays, isValid, format } from 'date-fns';
 import { GROCERY_STORES, INSURANCE_COMPANIES, UTILITIES, DIGITAL_ENTERTAINMENT, INTERNET_SERVICE_PROVIDERS, FAST_FOOD_RESTAURANTS, OTHER_GOODS } from '../constants/expenseCategories';
 
 interface ExpenseParserProps {
@@ -12,140 +11,208 @@ interface ExpenseParserProps {
 }
 
 const categorizeExpense = (narrative: string): string => {
-  const lowercaseNarrative = narrative.toLowerCase().replace(/\s+/g, '');
+  const lowercaseNarrative = narrative.toLowerCase();
 
-  const matchCategory = (category: string[], list: string[]): boolean => {
-    return list.some(item => {
-      const processedItem = item.toLowerCase().replace(/\s+/g, '');
-      return lowercaseNarrative.includes(processedItem);
-    });
+  const matchCategory = (list: string[]): boolean => {
+    console.log('[ExpenseParser] list:', list);
+    return list.some(item => lowercaseNarrative.includes(item.toLowerCase()));
   };
 
-  if (matchCategory(['grocery', 'supermarket'], GROCERY_STORES)) return 'Groceries';
-  if (matchCategory(['insurance'], INSURANCE_COMPANIES)) return 'Insurance';
-  if (matchCategory(['utility', 'energy', 'water', 'gas'], UTILITIES)) return 'Utilities';
-  if (matchCategory(['entertainment', 'streaming', 'subscription'], DIGITAL_ENTERTAINMENT)) return 'Digital Entertainment';
-  if (matchCategory(['internet', 'broadband', 'mobile'], INTERNET_SERVICE_PROVIDERS)) return 'Online Services';
-  if (matchCategory(['fastfood', 'restaurant', 'burger', 'pizza'], FAST_FOOD_RESTAURANTS)) return 'Eating Out';
-  if (matchCategory(['shopping', 'store', 'retail'], OTHER_GOODS)) return 'Other Goods';
+  // Log the narrative for debugging
+  console.log(`[ExpenseParser] Categorizing narrative: ${narrative}`);
 
+  if (matchCategory(GROCERY_STORES)) {
+    console.log(`[ExpenseParser] Categorized as Groceries`);
+    return 'Groceries';
+  }
+  if (matchCategory(INSURANCE_COMPANIES)) {
+    console.log(`[ExpenseParser] Categorized as Insurance`);
+    return 'Insurance';
+  }
+  if (matchCategory(UTILITIES)) {
+    console.log(`[ExpenseParser] Categorized as Utilities`);
+    return 'Utilities';
+  }
+  if (matchCategory(DIGITAL_ENTERTAINMENT)) {
+    console.log(`[ExpenseParser] Categorized as Digital Entertainment`);
+    return 'Digital Entertainment';
+  }
+  if (matchCategory(INTERNET_SERVICE_PROVIDERS)) {
+    console.log(`[ExpenseParser] Categorized as Online Services`);
+    return 'Online Services';
+  }
+  if (matchCategory(FAST_FOOD_RESTAURANTS)) {
+    console.log(`[ExpenseParser] Categorized as Eating Out`);
+    return 'Eating Out';
+  }
+  if (matchCategory(OTHER_GOODS)) {
+    console.log(`[ExpenseParser] Categorized as Other Goods`);
+    return 'Other Goods';
+  }
+
+  // Additional generic checks
+  if (lowercaseNarrative.includes('grocery') || lowercaseNarrative.includes('supermarket')) {
+    console.log(`[ExpenseParser] Categorized as Groceries (generic)`);
+    return 'Groceries';
+  }
+  if (lowercaseNarrative.includes('insurance')) {
+    console.log(`[ExpenseParser] Categorized as Insurance (generic)`);
+    return 'Insurance';
+  }
+  if (lowercaseNarrative.includes('utility') || lowercaseNarrative.includes('energy') || lowercaseNarrative.includes('water') || lowercaseNarrative.includes('gas')) {
+    console.log(`[ExpenseParser] Categorized as Utilities (generic)`);
+    return 'Utilities';
+  }
+  if (lowercaseNarrative.includes('entertainment') || lowercaseNarrative.includes('streaming') || lowercaseNarrative.includes('subscription')) {
+    console.log(`[ExpenseParser] Categorized as Digital Entertainment (generic)`);
+    return 'Digital Entertainment';
+  }
+  if (lowercaseNarrative.includes('internet') || lowercaseNarrative.includes('broadband') || lowercaseNarrative.includes('mobile')) {
+    console.log(`[ExpenseParser] Categorized as Online Services (generic)`);
+    return 'Online Services';
+  }
+  if (lowercaseNarrative.includes('restaurant') || lowercaseNarrative.includes('cafe') || lowercaseNarrative.includes('food')) {
+    console.log(`[ExpenseParser] Categorized as Eating Out (generic)`);
+    return 'Eating Out';
+  }
+  if (lowercaseNarrative.includes('shopping') || lowercaseNarrative.includes('store') || lowercaseNarrative.includes('retail')) {
+    console.log(`[ExpenseParser] Categorized as Other Goods (generic)`);
+    return 'Other Goods';
+  }
+
+  console.log(`[ExpenseParser] Categorized as Other`);
   return 'Other';
 };
 
 const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpenses, onParseError, ignoreZeroTransactions }) => {
   useEffect(() => {
     if (fileContent) {
-      Papa.parse(fileContent, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          if (results.errors.length > 0) {
-            onParseError("Error reading the file. It must be in CSV format.");
-            return;
-          }
-
-          const parsedData = results.data
-            .map((row: any) => {
-              const dateString = row.Date || '';
-              const parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
-              const debitAmount = parseFloat(row['Debit Amount'] || '0');
-
-              if (ignoreZeroTransactions && debitAmount === 0) {
-                return null;
-              }
-
-              const expense: Expense = {
-                Date: isValid(parsedDate) ? parsedDate.toISOString().split('T')[0] : '',
-                Narrative: row.Narrative || '',
-                DebitAmount: debitAmount,
-                CreditAmount: parseFloat(row['Credit Amount'] || '0'),
-                Category: categorizeExpense(row.Narrative || ''),
-                IsRecurring: false,
-              };
-              return expense;
-            })
-            .filter((expense): expense is Expense => expense !== null);
-
-          // Flag recurring transactions
-          const dataWithRecurring = identifyRecurringTransactions(parsedData);
-          // Count recurring transactions
-          const recurringCount = dataWithRecurring.filter(expense => expense.IsRecurring).length;
-          onParsedExpenses(dataWithRecurring, recurringCount);
-        },
-        error: (error) => {
-          console.error('Papa Parse error:', error);
-          onParseError("Error reading the file. It must be in CSV format.");
-        },
-      });
+      try {
+        const parsedExpenses = parseQIF(fileContent, ignoreZeroTransactions);
+        const dataWithRecurring = identifyRecurringTransactions(parsedExpenses);
+        const recurringCount = dataWithRecurring.filter(expense => expense.IsRecurring).length;
+        onParsedExpenses(dataWithRecurring, recurringCount);
+      } catch (error) {
+        onParseError("Error reading the file. It must be in QIF format.");
+      }
     }
   }, [fileContent, onParsedExpenses, onParseError, ignoreZeroTransactions]);
 
   return null;
 };
 
-export const identifyRecurringTransactions = (expenses: Expense[]): Expense[] => {
-  const transactionMap: Record<string, Expense[]> = {};
+const parseQIF = (content: string, ignoreZeroTransactions: boolean): Expense[] => {
+  const lines = content.split('\n');
+  const expenses: Expense[] = [];
+  let currentExpense: Partial<Expense> = {};
 
-  // Group transactions by narrative only
-  expenses.forEach(expense => {
-    const key = expense.Narrative;
-    if (!transactionMap[key]) {
-      transactionMap[key] = [];
+  console.log('[ExpenseParser] Starting QIF parsing...');
+  console.log(`[ExpenseParser] Total lines to process: ${lines.length}`);
+
+  for (const line of lines) {
+    const type = line[0];
+    const value = line.slice(1).trim();
+
+    switch (type) {
+      case 'D':
+        currentExpense.Date = parseDate(value);
+        console.log(`[ExpenseParser] Parsed date: ${currentExpense.Date}`);
+        break;
+      case 'T':
+        const amount = parseFloat(value);
+        if (amount < 0) {
+          currentExpense.DebitAmount = Math.abs(amount);
+          currentExpense.CreditAmount = 0;
+          console.log(`[ExpenseParser] Parsed debit amount: ${currentExpense.DebitAmount}`);
+        } else {
+          currentExpense.DebitAmount = 0;
+          currentExpense.CreditAmount = amount;
+          console.log(`[ExpenseParser] Parsed credit amount: ${currentExpense.CreditAmount}`);
+        }
+        break;
+      case 'M':  // Changed from 'P' to 'M' for QIF format
+        currentExpense.Narrative = value;
+        console.log(`[ExpenseParser] Parsed narrative: ${currentExpense.Narrative}`);
+        break;
+      case 'L':  // Added case for 'L' type (category in QIF)
+        currentExpense.Category = value;
+        // console.log(`[ExpenseParser] Parsed category: ${currentExpense.Category}`);
+        break;
+      case '^':
+        console.log('[ExpenseParser] Parsing ^')
+        if (currentExpense.Date && (currentExpense.DebitAmount !== undefined || currentExpense.CreditAmount !== undefined)) {
+          const debitAmount = currentExpense.DebitAmount || 0;
+          const creditAmount = currentExpense.CreditAmount || 0;
+          const isZeroTransaction = (debitAmount === 0 && creditAmount === 0);
+          console.log(`[ExpenseParser] Debit amount: ${debitAmount}`);
+          console.log(`[ExpenseParser] Credit amount: ${creditAmount}`);
+          console.log(`[ExpenseParser] Is zero transaction: ${isZeroTransaction}`);
+          if (!(ignoreZeroTransactions && isZeroTransaction)) {
+            const expense: Expense = {
+              Date: currentExpense.Date,
+              Narrative: currentExpense.Narrative || '',
+              DebitAmount: debitAmount,
+              CreditAmount: creditAmount,
+              Category: categorizeExpense(currentExpense.Narrative || ''),
+              IsRecurring: false,
+            };
+            expenses.push(expense);
+            // console.log(`[ExpenseParser] Added expense: ${JSON.stringify(expense)}`);
+          } else {
+            // console.log(`[ExpenseParser] Ignored zero transaction. Debit: ${debitAmount}, Credit: ${creditAmount}`);
+          }
+        } else {
+          // console.log('[ExpenseParser] Skipped incomplete expense entry');
+        }
+        currentExpense = {};
+        break;
     }
-    transactionMap[key].push(expense);
-  });
+  }
 
-  const recurringTransactions: Set<string> = new Set();
-
-  Object.entries(transactionMap).forEach(([key, transactions]) => {
-    if (transactions.length >= 2) {
-      // Sort transactions by date
-      transactions.sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
-
-      // Check for regular intervals
-      const intervals: number[] = [];
-      for (let i = 1; i < transactions.length; i++) {
-        const daysDiff = differenceInDays(
-          new Date(transactions[i].Date),
-          new Date(transactions[i - 1].Date)
-        );
-        intervals.push(daysDiff);
-      }
-
-      // Check if intervals are consistent with monthly billing (allowing for more flexibility)
-      const isMonthly = intervals.every(interval =>
-        (interval >= 28 && interval <= 32)
-      );
-
-      // check not just for monthly, but also for other common bill frequencies
-      const isQuarterly = intervals.every(interval =>
-        (interval >= 84 && interval <= 96)
-      );
-
-      const isEveryTwoMonths = intervals.every(interval =>
-        (interval >= 56 && interval <= 64)
-      );
-
-      // Check for similar amounts (allowing 25% variation)
-      const amounts = transactions.map(t => t.DebitAmount);
-      const averageAmount = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;
-      const hasSimilarAmounts = amounts.every(amount =>
-        Math.abs(amount - averageAmount) <= averageAmount * 0.25
-      );
-
-      // Mark as recurring if it's monthly or has at least 3 occurrences with similar amounts
-      if (isMonthly || isQuarterly || isEveryTwoMonths || (transactions.length >= 3 && hasSimilarAmounts)) {
-        recurringTransactions.add(key);
-      }
-    }
-  });
-
-  // Mark recurring transactions
-  return expenses.map(expense => ({
-    ...expense,
-    IsRecurring: recurringTransactions.has(expense.Narrative)
-  }));
+  console.log(`[ExpenseParser] Parsing complete. Total expenses parsed: ${expenses.length}`);
+  return expenses;
 };
 
+const parseDate = (dateString: string): string => {
+  const parsedDate = parse(dateString, "dd/MM/yyyy", new Date());
+  if (isValid(parsedDate)) {
+    const formattedDate = format(parsedDate, 'yyyy-MM-dd');
+    console.log(`[ExpenseParser] Parsed date string "${dateString}" to "${formattedDate}"`);
+    return formattedDate;
+  } else {
+    console.warn(`Invalid date string: "${dateString}"`);
+    return '';
+  }
+};
+
+export const identifyRecurringTransactions = (expenses: Expense[]): Expense[] => {
+  const recurringThreshold = 25; // days
+  const narrativeMap: { [key: string]: Expense[] } = {};
+
+  // Group expenses by narrative
+  expenses.forEach(expense => {
+    if (!narrativeMap[expense.Narrative]) {
+      narrativeMap[expense.Narrative] = [];
+    }
+    narrativeMap[expense.Narrative].push(expense);
+  });
+
+  // Identify recurring transactions
+  Object.values(narrativeMap).forEach(group => {
+    if (group.length > 1) {
+      group.sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
+
+      for (let i = 1; i < group.length; i++) {
+        const daysDifference = differenceInDays(new Date(group[i].Date), new Date(group[i - 1].Date));
+        if (daysDifference >= recurringThreshold && daysDifference <= recurringThreshold + 5) {
+          group[i].IsRecurring = true;
+          group[i - 1].IsRecurring = true;
+        }
+      }
+    }
+  });
+
+  return expenses;
+};
 
 export default ExpenseParser;

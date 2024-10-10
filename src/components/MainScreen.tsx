@@ -10,7 +10,7 @@ import { CategoryColorMap } from '../types/categoryColorMap';
 import RecurringTransactionNotification from './RecurringTransactionNotification';
 import DevPage from './DevPage';
 import { logToDevPage } from '../utils/logger';
-import { DUMMY_CSV_DATA } from '../constants/dummyData';
+import { DUMMY_QIF_DATA } from '../constants/dummyData';
 
 const MainScreen: React.FC = () => {
   const [fileContent, setFileContent] = useState<string>('');
@@ -56,7 +56,7 @@ const MainScreen: React.FC = () => {
   }, []);
 
   const handleImportDummyData = useCallback(() => {
-    handleFileContentChange(DUMMY_CSV_DATA);
+    handleFileContentChange(DUMMY_QIF_DATA);
   }, [handleFileContentChange]);
 
   return (

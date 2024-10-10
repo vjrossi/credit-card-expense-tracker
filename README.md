@@ -5,7 +5,7 @@ Uses TypeScript, React, TailwindCSS
 
 ### Gives a quick breakdown by category, of your bank statement. Does not store any data, even in local storage.
 
-Download a CSV formatted bank statement and drag-drop it onto the app. Transaction categories are relevant to Australia,
+Download a QIF formatted bank statement and drag-drop it onto the app. Transaction categories are relevant to Australia,
 because company/store names are used for this purpose.
 
 - The app attempts to recognise recurring transactions

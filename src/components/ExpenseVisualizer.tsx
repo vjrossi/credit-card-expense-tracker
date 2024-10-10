@@ -181,7 +181,7 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
                 </button>
               </div>
               <div className="overflow-y-auto flex-grow pr-4 custom-scrollbar">
-                <table className="w-full text-xs"> {/* Changed from text-sm to text-xs */}
+                <table className="w-full text-xs">
                   <tbody>
                     {sortedExpenses.map((expense, index) => (
                       <tr key={index} className="border-b border-gray-200 last:border-b-0">

@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useState, DragEvent } from 'react';
 import { Form, Accordion, OverlayTrigger, Tooltip, Button } from 'react-bootstrap';
 import { FaInfoCircle } from 'react-icons/fa';
-import { DUMMY_CSV_DATA } from '../constants/dummyData';
+
 interface FileUploadProps {
   onFileContentChange: (content: string) => void;
   ignoreZeroTransactions: boolean;
@@ -16,7 +16,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
   onFileContentChange,
   ignoreZeroTransactions,
   onIgnoreZeroTransactionsChange,
-  isFileUploaded,
   isExpanded,
   setIsExpanded,
   onImportDummyData
@@ -74,7 +73,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         </Accordion.Header>
         <Accordion.Body>
           <p className="text-muted mb-4">
-            To use this expense tracker, please export a transaction list or statement from your bank in CSV format. Most banks offer this option in their online banking portal.
+            To use this expense tracker, please export a transaction list or statement from your bank in QIF format. Most banks offer this option in their online banking portal.
           </p>
           <Form.Check
             type="switch"
@@ -99,12 +98,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 <span className="fw-bold">Click to upload</span> or drag and drop
               </p>
               <p className="text-muted small d-flex align-items-center justify-content-center">
-                <span>CSV file only</span>
+                <span>QIF file only</span>
                 <OverlayTrigger
                   placement="right"
                   overlay={
-                    <Tooltip id="csv-info-tooltip">
-                      Must have the fields: Date, Narrative, Debit Amount, Credit Amount
+                    <Tooltip id="qif-info-tooltip">
+                      QIF (Quicken Interchange Format) file exported from your bank
                     </Tooltip>
                   }
                 >
@@ -117,7 +116,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
             <input
               id="file-upload"
               type="file"
-              accept=".csv"
+              accept=".qif"
               onChange={handleFileChange}
               className="d-none"
             />

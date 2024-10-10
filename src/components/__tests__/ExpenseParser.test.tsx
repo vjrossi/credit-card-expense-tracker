@@ -26,21 +26,12 @@ describe('identifyRecurringTransactions', () => {
       Category: row.Category,
       IsRecurring: false,
     }));
-    console.log('testExpenses count', testExpenses.length);
   });
 
   test('correctly identifies recurring transactions', () => {
     const result = identifyRecurringTransactions(testExpenses);
-    // console.log('Result:', result);
-    console.log('result length:', result.length);
-    
-
     // Check if the function identified any recurring transactions
     const recurringTransactions = result.filter(expense => expense.IsRecurring);
-    console.log('recurringTransactions count', recurringTransactions.length);
-
-
-
 
   });
 

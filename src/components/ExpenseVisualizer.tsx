@@ -4,6 +4,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Expense } from '../types/expense';
 import { CategoryColorMap } from '../types/categoryColorMap';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa'; // Add this import
+import { format } from 'date-fns'; // Add this import
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -182,12 +183,27 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
               </div>
               <div className="overflow-y-auto flex-grow pr-4 custom-scrollbar">
                 <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="py-2 text-left font-medium text-gray-800">Date</th>
+                      <th className="py-2 text-left font-medium text-gray-800">Description</th>
+                      <th className="py-2 text-right font-medium text-gray-800">Debit</th>
+                      <th className="py-2 text-right font-medium text-gray-800">Credit</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     {sortedExpenses.map((expense, index) => (
                       <tr key={index} className="border-b border-gray-200 last:border-b-0">
-                        <td className="py-2 font-medium text-gray-800">{expense.Date}</td>
+                        <td className="py-2 font-medium text-gray-800">
+                          {format(new Date(expense.Date), 'dd-MMM-yyyy')}
+                        </td>
                         <td className="py-2 truncate max-w-[200px] text-gray-800">{expense.Narrative}</td>
-                        <td className="py-2 text-right font-medium text-gray-800">${expense.DebitAmount.toFixed(2)}</td>
+                        <td className="py-2 text-right font-medium text-red-600">
+                          {expense.DebitAmount > 0 ? `$${expense.DebitAmount.toFixed(2)}` : '-'}
+                        </td>
+                        <td className="py-2 text-right font-medium text-green-600">
+                          {expense.CreditAmount > 0 ? `$${expense.CreditAmount.toFixed(2)}` : '-'}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

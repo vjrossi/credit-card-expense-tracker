@@ -30,6 +30,17 @@ const BalanceChart: React.FC<BalanceChartProps> = ({ expenses, finalBalance }) =
       return acc;
     }, {});
 
+    // Calculate trendline
+    const xValues = reversedData.map((_, index) => index);
+    const yValues = reversedData.map(item => item.balance);
+    const { slope, intercept } = calculateLinearRegression(xValues, yValues);
+    const trendlineData = xValues.map(x => slope * x + intercept);
+
+    // Adjust trendline to start from the first actual balance point
+    const firstBalance = reversedData[0].balance;
+    const trendlineOffset = firstBalance - trendlineData[0];
+    const adjustedTrendlineData = trendlineData.map(value => value + trendlineOffset);
+
     return {
       labels,
       datasets: [
@@ -38,6 +49,14 @@ const BalanceChart: React.FC<BalanceChartProps> = ({ expenses, finalBalance }) =
           data: reversedData.map(item => item.balance),
           borderColor: 'rgb(75, 192, 192)',
           tension: 0.1,
+        },
+        {
+          label: 'Trendline',
+          data: adjustedTrendlineData,
+          borderColor: 'rgba(255, 99, 132, 0.8)',
+          borderDash: [5, 5],
+          pointRadius: 0,
+          fill: false,
         },
       ],
       dailyNetChanges,
@@ -89,5 +108,20 @@ const BalanceChart: React.FC<BalanceChartProps> = ({ expenses, finalBalance }) =
 
   return <Line data={chartData} options={options} />;
 };
+
+// Helper function to calculate linear regression
+function calculateLinearRegression(xValues: number[], yValues: number[]) {
+  const n = xValues.length;
+  let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+  for (let i = 0; i < n; i++) {
+    sumX += xValues[i];
+    sumY += yValues[i];
+    sumXY += xValues[i] * yValues[i];
+    sumXX += xValues[i] * xValues[i];
+  }
+  const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+  const intercept = (sumY - slope * sumX) / n;
+  return { slope, intercept };
+}
 
 export default BalanceChart;

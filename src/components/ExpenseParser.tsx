@@ -19,49 +19,37 @@ const categorizeExpense = (narrative: string): string => {
     return list.some(item => lowercaseNarrative.includes(item.toLowerCase()));
   };
 
-  if (matchCategory(GROCERY_STORES)) {
-    return 'Groceries';
-  }
-  if (matchCategory(INSURANCE_COMPANIES)) {
-    return 'Insurance';
-  }
-  if (matchCategory(UTILITIES)) {
-    return 'Utilities';
-  }
-  if (matchCategory(DIGITAL_ENTERTAINMENT)) {
-    return 'Digital Entertainment';
-  }
-  if (matchCategory(INTERNET_SERVICE_PROVIDERS)) {
-    return 'Online Services';
-  }
-  if (matchCategory(FAST_FOOD_RESTAURANTS)) {
-    return 'Eating Out';
-  }
-  if (matchCategory(OTHER_GOODS)) {
-    return 'Other Goods';
+  const categories = [
+    { list: GROCERY_STORES, label: 'Groceries' },
+    { list: INSURANCE_COMPANIES, label: 'Insurance' },
+    { list: UTILITIES, label: 'Utilities' },
+    { list: DIGITAL_ENTERTAINMENT, label: 'Digital Entertainment' },
+    { list: INTERNET_SERVICE_PROVIDERS, label: 'Online Services' },
+    { list: FAST_FOOD_RESTAURANTS, label: 'Eating Out' },
+    { list: OTHER_GOODS, label: 'Other Goods' }
+  ];
+
+  for (const { list, label } of categories) {
+    if (matchCategory(list)) {
+      return label;
+    }
   }
 
   // Additional generic checks
-  if (lowercaseNarrative.includes('grocery') || lowercaseNarrative.includes('supermarket')) {
-    return 'Groceries';
-  }
-  if (lowercaseNarrative.includes('insurance')) {
-    return 'Insurance';
-  }
-  if (lowercaseNarrative.includes('utility') || lowercaseNarrative.includes('energy') || lowercaseNarrative.includes('water') || lowercaseNarrative.includes('gas')) {
-    return 'Utilities';
-  }
-  if (lowercaseNarrative.includes('entertainment') || lowercaseNarrative.includes('streaming') || lowercaseNarrative.includes('subscription')) {
-    return 'Digital Entertainment';
-  }
-  if (lowercaseNarrative.includes('internet') || lowercaseNarrative.includes('broadband') || lowercaseNarrative.includes('mobile')) {
-    return 'Online Services';
-  }
-  if (lowercaseNarrative.includes('restaurant') || lowercaseNarrative.includes('cafe') || lowercaseNarrative.includes('food')) {
-    return 'Eating Out';
-  }
-  if (lowercaseNarrative.includes('shopping') || lowercaseNarrative.includes('store') || lowercaseNarrative.includes('retail')) {
-    return 'Other Goods';
+  const genericChecks = [
+    { keywords: ['grocery', 'supermarket'], label: 'Groceries' },
+    { keywords: ['insurance'], label: 'Insurance' },
+    { keywords: ['utility', 'energy', 'water', 'gas'], label: 'Utilities' },
+    { keywords: ['entertainment', 'streaming', 'subscription'], label: 'Digital Entertainment' },
+    { keywords: ['internet', 'broadband', 'mobile'], label: 'Online Services' },
+    { keywords: ['restaurant', 'cafe', 'food'], label: 'Eating Out' },
+    { keywords: ['shopping', 'store', 'retail'], label: 'Other Goods' }
+  ];
+
+  for (const { keywords, label } of genericChecks) {
+    if (keywords.some(keyword => lowercaseNarrative.includes(keyword))) {
+      return label;
+    }
   }
 
   return 'Other';

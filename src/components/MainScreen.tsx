@@ -12,6 +12,7 @@ import DevPage from './DevPage';
 import { logToDevPage } from '../utils/logger';
 import { DUMMY_QIF_DATA } from '../constants/dummyData';
 import { AccountType } from '../types/AccountType';
+import BalanceChart from './BalanceChart';
 
 const MainScreen: React.FC = () => {
   const [fileContent, setFileContent] = useState<string>('');
@@ -28,6 +29,8 @@ const MainScreen: React.FC = () => {
   const [isRecurringTransactionsExpanded, setIsRecurringTransactionsExpanded] = useState(false);
   const [isTransactionTimespanExpanded, setIsTransactionTimespanExpanded] = useState(false);
   const [accountType, setAccountType] = useState<AccountType | null>(null);
+  const [finalBalance, setFinalBalance] = useState<number | null>(null);
+  const [balanceInput, setBalanceInput] = useState<string>('');
 
   const clearDevLogs = useCallback(() => {
     localStorage.removeItem('devLogs');
@@ -41,6 +44,8 @@ const MainScreen: React.FC = () => {
     setRecurringCount(recurringCount);
     setRecurringTransactions(parsedExpenses.filter(expense => expense.IsRecurring));
     setShowUploadAlert(true); // Show success message only after successful parsing
+    setFinalBalance(null);
+    setBalanceInput('');
   }, []);
 
   const handleParseError = useCallback((error: string) => {
@@ -61,6 +66,17 @@ const MainScreen: React.FC = () => {
   const handleImportDummyData = useCallback(() => {
     handleFileContentChange(DUMMY_QIF_DATA, AccountType.BANK);
   }, [handleFileContentChange]);
+
+  const handleBalanceSubmit = () => {
+    const parsedBalance = parseFloat(balanceInput);
+    if (!isNaN(parsedBalance) && parsedBalance > 0) {
+      setFinalBalance(parsedBalance);
+      setBalanceInput('');
+    } else {
+      // You might want to show an error message here
+      console.error('Invalid balance input');
+    }
+  };
 
   // Add this useEffect to handle the alert timeout
   useEffect(() => {
@@ -144,6 +160,37 @@ const MainScreen: React.FC = () => {
             <div className="bg-white shadow-sm rounded p-4">
               <ExpenseVisualizer expenses={expenses} setCategoryColorMap={setCategoryColorMap} />
             </div>
+            {accountType === AccountType.BANK && expenses.length > 0 && (
+              <div className="mt-4 bg-white shadow-sm rounded p-4">
+                {finalBalance === null && (
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold mb-2">Enter Final Balance</h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Please enter your account balance as of the last transaction date ({expenses[expenses.length - 1].Date}).
+                    </p>
+                    <div className="flex items-center">
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="border rounded px-2 py-1 mr-2"
+                        placeholder="Enter final balance"
+                        value={balanceInput}
+                        onChange={(e) => setBalanceInput(e.target.value)}
+                      />
+                      <button
+                        className="bg-blue-500 text-white px-4 py-1 rounded"
+                        onClick={handleBalanceSubmit}
+                      >
+                        Submit
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {finalBalance !== null && (
+                  <BalanceChart expenses={expenses} finalBalance={finalBalance} />
+                )}
+              </div>
+            )}
           </>
         )}
       </main>

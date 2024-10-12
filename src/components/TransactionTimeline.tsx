@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Expense } from '../types/expense';
-import { parse, format, differenceInDays, isValid, addDays } from 'date-fns';
+import { parse, format, differenceInDays, isValid, addDays, eachMonthOfInterval, isSameMonth } from 'date-fns';
 import TransactionTooltip from './TransactionTooltip';
 import { CategoryColorMap } from '../types/categoryColorMap';
 import { Accordion } from 'react-bootstrap';
@@ -15,9 +15,8 @@ interface TransactionTimelineProps {
 const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, categoryColorMap, isExpanded, setIsExpanded }) => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  const LARGE_TRANSACTION_THRESHOLD = 500; // $500
-  const NUMBER_OF_MARKERS = 50;
-  const MAX_GAP_DAYS = 7; // Maximum allowed gap between markers in days
+  const LARGE_TRANSACTION_THRESHOLD = 200; // $200
+  const NUMBER_OF_MARKERS = 100;
 
   const parseDateSafely = (dateString: string) => {
     const parsedDate = parse(dateString, 'yyyy-MM-dd', new Date());
@@ -28,7 +27,7 @@ const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, cat
     // Filter out $0 amounts and separate credits and debits
     const nonZeroTransactions = expenses.filter(expense => expense.DebitAmount > 0 || expense.CreditAmount > 0);
 
-    if (nonZeroTransactions.length === 0) return { markerTransactions: [], startDate: new Date(), endDate: new Date(), maxAmount: 0 };
+    if (nonZeroTransactions.length === 0) return { markerTransactions: [], startDate: new Date(), endDate: new Date(), maxDebitAmount: 0, maxCreditAmount: 0 };
 
     // Sort all non-zero transactions by date
     const sortedTransactions = [...nonZeroTransactions].sort((a, b) => 
@@ -38,14 +37,8 @@ const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, cat
     const dates = sortedTransactions.map(transaction => parseDateSafely(transaction.Date));
     const startDate = dates[0];
     const endDate = dates[dates.length - 1];
-    const maxAmount = Math.max(...sortedTransactions.map(transaction => Math.max(transaction.DebitAmount, transaction.CreditAmount)));
 
-    // Include all transactions over $500
-    const markerTransactions = sortedTransactions.filter(transaction => 
-      transaction.DebitAmount > LARGE_TRANSACTION_THRESHOLD || transaction.CreditAmount > LARGE_TRANSACTION_THRESHOLD
-    );
-
-    // Function to find the nearest non-zero transaction to a given date
+    // Function to find the nearest transaction to a given date
     const findNearestTransaction = (targetDate: Date) => {
       return sortedTransactions.reduce((nearest, current) => {
         const currentDate = parseDateSafely(current.Date);
@@ -56,49 +49,19 @@ const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, cat
       });
     };
 
-    // Fill gaps
-    let lastMarkerDate = startDate;
-    for (let i = 0; i < sortedTransactions.length; i++) {
-      const currentTransaction = sortedTransactions[i];
-      const currentDate = parseDateSafely(currentTransaction.Date);
-      const daysSinceLastMarker = differenceInDays(currentDate, lastMarkerDate);
-
-      if (daysSinceLastMarker >= MAX_GAP_DAYS) {
-        const midpointDate = addDays(lastMarkerDate, Math.floor(daysSinceLastMarker / 2));
-        const nearestTransaction = findNearestTransaction(midpointDate);
-        if (!markerTransactions.includes(nearestTransaction)) {
-          markerTransactions.push(nearestTransaction);
-          lastMarkerDate = parseDateSafely(nearestTransaction.Date);
-        }
-      }
-
-      if (currentTransaction.DebitAmount > LARGE_TRANSACTION_THRESHOLD || currentTransaction.CreditAmount > LARGE_TRANSACTION_THRESHOLD) {
-        lastMarkerDate = currentDate;
-      }
+    // Select markers based on NUMBER_OF_MARKERS
+    const markerTransactions = [];
+    const interval = (sortedTransactions.length - 1) / (NUMBER_OF_MARKERS - 1);
+    for (let i = 0; i < NUMBER_OF_MARKERS; i++) {
+      const index = Math.round(i * interval);
+      markerTransactions.push(sortedTransactions[index]);
     }
-
-    // If we have less than NUMBER_OF_MARKERS, add more evenly distributed
-    while (markerTransactions.length < NUMBER_OF_MARKERS) {
-      const idealGap = differenceInDays(endDate, startDate) / (markerTransactions.length + 1);
-      const idealDate = addDays(startDate, Math.floor(idealGap));
-      const nearestTransaction = findNearestTransaction(idealDate);
-      if (!markerTransactions.includes(nearestTransaction)) {
-        markerTransactions.push(nearestTransaction);
-      } else {
-        break; // Avoid infinite loop if we can't add more unique transactions
-      }
-    }
-
-    // Sort marker transactions by date
-    markerTransactions.sort((a, b) => parseDateSafely(a.Date).getTime() - parseDateSafely(b.Date).getTime());
 
     const maxDebitAmount = Math.max(0, ...sortedTransactions.map(transaction => transaction.DebitAmount));
     const maxCreditAmount = Math.max(0, ...sortedTransactions.map(transaction => transaction.CreditAmount));
 
     return { markerTransactions, startDate, endDate, maxDebitAmount, maxCreditAmount };
-  }, [expenses]);
-
-  if (!timelineData.markerTransactions.length) return null;
+  }, [expenses, NUMBER_OF_MARKERS]);
 
   const { markerTransactions, startDate, endDate, maxDebitAmount, maxCreditAmount } = timelineData;
 
@@ -108,9 +71,17 @@ const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, cat
 
   const daysDifference = differenceInDays(endDate, startDate);
 
+  // Generate date markers
+  const dateMarkers = useMemo(() => {
+    if (!startDate || !endDate) return [];
+    return eachMonthOfInterval({ start: startDate, end: endDate });
+  }, [startDate, endDate]);
+
+  if (!timelineData.markerTransactions.length) return null;
+
   const timelineMarkers = markerTransactions.map((transaction, index) => {
     const date = parseDateSafely(transaction.Date);
-    const position = (differenceInDays(date, startDate) / daysDifference) * 100;
+    const position = Math.max(0, Math.min(100, (differenceInDays(date, startDate) / daysDifference) * 100));
     const isDebit = transaction.DebitAmount > 0;
     const amount = isDebit ? transaction.DebitAmount : transaction.CreditAmount;
     const safeRelevantMaxAmount = (isDebit ? maxDebitAmount : maxCreditAmount) || 1;
@@ -134,6 +105,23 @@ const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, cat
     );
   });
 
+  const dateMarkerElements = dateMarkers.map((date, index) => {
+    const position = Math.max(0, Math.min(100, (differenceInDays(date, startDate) / daysDifference) * 100));
+    return (
+      <div
+        key={`date-marker-${index}`}
+        className="absolute text-xs text-gray-500"
+        style={{
+          left: `${position}%`,
+          bottom: '-25px',
+          transform: 'translateX(-50%)',
+        }}
+      >
+        {format(date, 'MMM')} {/* Always show month abbreviation */}
+      </div>
+    );
+  });
+
   return (
     <Accordion activeKey={isExpanded ? '0' : ''}>
       <Accordion.Item eventKey="0">
@@ -147,8 +135,9 @@ const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, cat
               <p className="text-lg font-semibold text-gray-800">{formatDate(startDate)}</p>
             </div>
             <div className="flex-grow mx-4 relative custom-scrollbar">
-              <div className="h-32 bg-gray-100 rounded-full overflow-hidden relative">
+              <div className="h-32 bg-gray-100 overflow-visible relative mb-8">
                 {timelineMarkers}
+                {dateMarkerElements}
               </div>
               {selectedDate && (
                 <TransactionTooltip

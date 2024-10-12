@@ -5,14 +5,14 @@ import TransactionTooltip from './TransactionTooltip';
 import { CategoryColorMap } from '../types/categoryColorMap';
 import { Accordion } from 'react-bootstrap';
 
-interface TransactionTimespanProps {
+interface TransactionTimelineProps {
   expenses: Expense[];
   categoryColorMap: CategoryColorMap;
   isExpanded: boolean;
   setIsExpanded: (isExpanded: boolean) => void;
 }
 
-const TransactionTimespan: React.FC<TransactionTimespanProps> = ({ expenses, categoryColorMap, isExpanded, setIsExpanded }) => {
+const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, categoryColorMap, isExpanded, setIsExpanded }) => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   if (expenses.length === 0) return null;
@@ -109,4 +109,4 @@ const TransactionTimespan: React.FC<TransactionTimespanProps> = ({ expenses, cat
   );
 };
 
-export default TransactionTimespan;
+export default TransactionTimeline;

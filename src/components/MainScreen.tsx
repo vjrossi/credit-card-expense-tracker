@@ -5,7 +5,7 @@ import FileUpload from './FileUpload';
 import ExpenseParser from './ExpenseParser';
 import ExpenseVisualizer from './ExpenseVisualizer';
 import { Expense } from '../types/expense';
-import TransactionTimespan from './TransactionTimespan';
+import TransactionTimeline from './TransactionTimeline';
 import { CategoryColorMap } from '../types/categoryColorMap';
 import RecurringTransactionNotification from './RecurringTransactionNotification';
 import DevPage from './DevPage';
@@ -27,7 +27,7 @@ const MainScreen: React.FC = () => {
   const [showUploadAlert, setShowUploadAlert] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRecurringTransactionsExpanded, setIsRecurringTransactionsExpanded] = useState(false);
-  const [isTransactionTimespanExpanded, setIsTransactionTimespanExpanded] = useState(false);
+  const [isTransactionTimelineExpanded, setIsTransactionTimelineExpanded] = useState(false);
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [finalBalance, setFinalBalance] = useState<number | null>(null);
   const [balanceInput, setBalanceInput] = useState<string>('');
@@ -117,7 +117,7 @@ const MainScreen: React.FC = () => {
     setShowUploadAlert(false);
     setErrorMessage(null);
     setIsRecurringTransactionsExpanded(false);
-    setIsTransactionTimespanExpanded(false);
+    setIsTransactionTimelineExpanded(false);
     setAccountType(null);
     setFinalBalance(null);
     setBalanceInput('');
@@ -205,11 +205,11 @@ const MainScreen: React.FC = () => {
               isExpanded={isRecurringTransactionsExpanded}
               setIsExpanded={setIsRecurringTransactionsExpanded}
             />
-            <TransactionTimespan
+            <TransactionTimeline
               expenses={expenses}
               categoryColorMap={categoryColorMap}
-              isExpanded={isTransactionTimespanExpanded}
-              setIsExpanded={setIsTransactionTimespanExpanded}
+              isExpanded={isTransactionTimelineExpanded}
+              setIsExpanded={setIsTransactionTimelineExpanded}
             />
             <div className="bg-white shadow-sm rounded p-4">
               <ExpenseVisualizer expenses={expenses} setCategoryColorMap={setCategoryColorMap} />

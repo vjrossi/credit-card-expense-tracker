@@ -134,12 +134,19 @@ const RecurringTransactionNotification: React.FC<RecurringTransactionNotificatio
                       </tr>
                     </thead>
                     <tbody>
-                      {transactions.map((transaction, index) => (
-                        <tr key={index} className="border-b border-yellow-100 last:border-b-0">
-                          <td className="py-1 px-1">{format(new Date(transaction.Date), 'dd-MM-yyyy')}</td>
-                          <td className="py-1 px-1">${transaction.DebitAmount.toFixed(2)}</td>
-                        </tr>
-                      ))}
+                      {transactions.map((transaction, index) => {
+                        const amount = transaction.DebitAmount !== 0 ? transaction.DebitAmount : transaction.CreditAmount;
+                        const formattedAmount = `$${Math.abs(amount).toFixed(2)}`;
+                        const displayAmount = transaction.DebitAmount !== 0 ? `-${formattedAmount}` : formattedAmount;
+                        return (
+                          <tr key={index} className="border-b border-yellow-100 last:border-b-0">
+                            <td className="py-1 px-1">{format(new Date(transaction.Date), 'dd-MM-yyyy')}</td>
+                            <td className="py-1 px-1">
+                              {displayAmount}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

@@ -16,73 +16,54 @@ const categorizeExpense = (narrative: string): string => {
   const lowercaseNarrative = narrative.toLowerCase();
 
   const matchCategory = (list: string[]): boolean => {
-    // console.log('[ExpenseParser] list:', list);
     return list.some(item => lowercaseNarrative.includes(item.toLowerCase()));
   };
 
-  // Log the narrative for debugging
-  console.log(`[ExpenseParser] Categorizing narrative: ${narrative}`);
-
   if (matchCategory(GROCERY_STORES)) {
-    console.log(`[ExpenseParser] Categorized as Groceries`);
     return 'Groceries';
   }
   if (matchCategory(INSURANCE_COMPANIES)) {
-    console.log(`[ExpenseParser] Categorized as Insurance`);
     return 'Insurance';
   }
   if (matchCategory(UTILITIES)) {
-    console.log(`[ExpenseParser] Categorized as Utilities`);
     return 'Utilities';
   }
   if (matchCategory(DIGITAL_ENTERTAINMENT)) {
-    console.log(`[ExpenseParser] Categorized as Digital Entertainment`);
     return 'Digital Entertainment';
   }
   if (matchCategory(INTERNET_SERVICE_PROVIDERS)) {
-    console.log(`[ExpenseParser] Categorized as Online Services`);
     return 'Online Services';
   }
   if (matchCategory(FAST_FOOD_RESTAURANTS)) {
-    console.log(`[ExpenseParser] Categorized as Eating Out`);
     return 'Eating Out';
   }
   if (matchCategory(OTHER_GOODS)) {
-    console.log(`[ExpenseParser] Categorized as Other Goods`);
     return 'Other Goods';
   }
 
   // Additional generic checks
   if (lowercaseNarrative.includes('grocery') || lowercaseNarrative.includes('supermarket')) {
-    console.log(`[ExpenseParser] Categorized as Groceries (generic)`);
     return 'Groceries';
   }
   if (lowercaseNarrative.includes('insurance')) {
-    console.log(`[ExpenseParser] Categorized as Insurance (generic)`);
     return 'Insurance';
   }
   if (lowercaseNarrative.includes('utility') || lowercaseNarrative.includes('energy') || lowercaseNarrative.includes('water') || lowercaseNarrative.includes('gas')) {
-    console.log(`[ExpenseParser] Categorized as Utilities (generic)`);
     return 'Utilities';
   }
   if (lowercaseNarrative.includes('entertainment') || lowercaseNarrative.includes('streaming') || lowercaseNarrative.includes('subscription')) {
-    console.log(`[ExpenseParser] Categorized as Digital Entertainment (generic)`);
     return 'Digital Entertainment';
   }
   if (lowercaseNarrative.includes('internet') || lowercaseNarrative.includes('broadband') || lowercaseNarrative.includes('mobile')) {
-    console.log(`[ExpenseParser] Categorized as Online Services (generic)`);
     return 'Online Services';
   }
   if (lowercaseNarrative.includes('restaurant') || lowercaseNarrative.includes('cafe') || lowercaseNarrative.includes('food')) {
-    console.log(`[ExpenseParser] Categorized as Eating Out (generic)`);
     return 'Eating Out';
   }
   if (lowercaseNarrative.includes('shopping') || lowercaseNarrative.includes('store') || lowercaseNarrative.includes('retail')) {
-    console.log(`[ExpenseParser] Categorized as Other Goods (generic)`);
     return 'Other Goods';
   }
 
-  console.log(`[ExpenseParser] Categorized as Other`);
   return 'Other';
 };
 
@@ -126,17 +107,18 @@ const parseQIF = (content: string, ignoreZeroTransactions: boolean, accountType:
           currentExpense.CreditAmount = amount;
         }
         break;
-      case 'M':  // Changed from 'P' to 'M' for QIF format
+      case 'M':
         currentExpense.Narrative = value;
         break;
-      case 'L':  // Added case for 'L' type (category in QIF)
+      case 'L':
         currentExpense.Category = value;
         break;
       case '^':
         if (currentExpense.Date && (currentExpense.DebitAmount !== undefined || currentExpense.CreditAmount !== undefined)) {
           const debitAmount = currentExpense.DebitAmount || 0;
           const creditAmount = currentExpense.CreditAmount || 0;
-          const isZeroTransaction = (debitAmount === 0 && creditAmount === 0);
+          const isZeroTransaction = Math.abs(debitAmount - creditAmount) < 0.001; // Use a small threshold for floating-point comparison
+
           if (!(ignoreZeroTransactions && isZeroTransaction)) {
             const expense: Expense = {
               Date: currentExpense.Date,
@@ -147,16 +129,13 @@ const parseQIF = (content: string, ignoreZeroTransactions: boolean, accountType:
               IsRecurring: false,
             };
             expenses.push(expense);
-          } else {
           }
-        } else {
         }
         currentExpense = {};
         break;
     }
   }
 
-  console.log(`[ExpenseParser] Parsing complete. Total expenses parsed: ${expenses.length}`);
   return expenses;
 };
 
@@ -164,10 +143,8 @@ const parseDate = (dateString: string): string => {
   const parsedDate = parse(dateString, "dd/MM/yyyy", new Date());
   if (isValid(parsedDate)) {
     const formattedDate = format(parsedDate, 'yyyy-MM-dd');
-    console.log(`[ExpenseParser] Parsed date string "${dateString}" to "${formattedDate}"`);
     return formattedDate;
   } else {
-    console.warn(`Invalid date string: "${dateString}"`);
     return '';
   }
 };

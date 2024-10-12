@@ -71,7 +71,7 @@ const BalanceChart: React.FC<BalanceChartProps> = ({ expenses, finalBalance }) =
       },
       title: {
         display: true,
-        text: 'Account Balance Over Time',
+        text: 'Account Balance Over the Statement Period',
       },
       tooltip: {
         callbacks: {

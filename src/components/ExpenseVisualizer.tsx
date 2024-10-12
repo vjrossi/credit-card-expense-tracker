@@ -120,6 +120,8 @@ const ExpenseVisualizer: React.FC<ExpenseVisualizerProps> = ({ expenses, setCate
         const categoryIndex = elements[0].index;
         const newCategory = categories[categoryIndex];
         setSelectedCategory(newCategory);
+        // Uncheck the "Search all categories" checkbox when a pie slice is clicked
+        setSearchAllCategories(false);
       }
     },
   };

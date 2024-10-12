@@ -32,7 +32,7 @@ describe('identifyRecurringTransactions', () => {
     const result = identifyRecurringTransactions(testExpenses);
     // Check if the function identified any recurring transactions
     const recurringTransactions = result.filter(expense => expense.IsRecurring);
-
+    expect(recurringTransactions.length).toBe(18);
   });
 
   test('handles empty input', () => {

@@ -32,7 +32,7 @@ const MainScreen: React.FC = () => {
   const [finalBalance, setFinalBalance] = useState<number | null>(null);
   const [balanceInput, setBalanceInput] = useState<string>('');
   const [showResetButton, setShowResetButton] = useState<boolean>(false);
-  const [savedBalance, setSavedBalance] = useState<{ balance: number; date: string } | null>(null);
+  const [, setSavedBalance] = useState<{ balance: number; date: string } | null>(null);
 
   const clearDevLogs = useCallback(() => {
     localStorage.removeItem('devLogs');

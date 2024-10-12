@@ -144,7 +144,7 @@ const MainScreen: React.FC = () => {
       <header className="bg-primary text-white shadow-sm">
         <div className="container py-4 px-3 d-flex justify-content-between align-items-center">
           <h1 className="h3 mb-0 d-flex align-items-center">
-            XXXQuick Transaction Analyser
+            ZZZQuick Transaction Analyser
             <OverlayTrigger
               placement="right"
               overlay={

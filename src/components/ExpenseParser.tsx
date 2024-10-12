@@ -2,9 +2,11 @@ import React, { useEffect } from 'react';
 import { Expense } from '../types/expense';
 import { parse, differenceInDays, isValid, format } from 'date-fns';
 import { GROCERY_STORES, INSURANCE_COMPANIES, UTILITIES, DIGITAL_ENTERTAINMENT, INTERNET_SERVICE_PROVIDERS, FAST_FOOD_RESTAURANTS, OTHER_GOODS } from '../constants/expenseCategories';
+import { AccountType } from '../types/AccountType';
 
 interface ExpenseParserProps {
   fileContent: string;
+  accountType: AccountType | null;
   onParsedExpenses: (expenses: Expense[], recurringCount: number) => void;
   onParseError: (error: string) => void;
   ignoreZeroTransactions: boolean;
@@ -84,11 +86,11 @@ const categorizeExpense = (narrative: string): string => {
   return 'Other';
 };
 
-const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpenses, onParseError, ignoreZeroTransactions }) => {
+const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, accountType, onParsedExpenses, onParseError, ignoreZeroTransactions }) => {
   useEffect(() => {
-    if (fileContent) {
+    if (fileContent && accountType) {
       try {
-        const parsedExpenses = parseQIF(fileContent, ignoreZeroTransactions);
+        const parsedExpenses = parseQIF(fileContent, ignoreZeroTransactions, accountType);
         const dataWithRecurring = identifyRecurringTransactions(parsedExpenses);
         const recurringCount = dataWithRecurring.filter(expense => expense.IsRecurring).length;
         onParsedExpenses(dataWithRecurring, recurringCount);
@@ -96,12 +98,12 @@ const ExpenseParser: React.FC<ExpenseParserProps> = ({ fileContent, onParsedExpe
         onParseError("Error reading the file. It must be in QIF format.");
       }
     }
-  }, [fileContent, onParsedExpenses, onParseError, ignoreZeroTransactions]);
+  }, [fileContent, accountType, onParsedExpenses, onParseError, ignoreZeroTransactions]);
 
   return null;
 };
 
-const parseQIF = (content: string, ignoreZeroTransactions: boolean): Expense[] => {
+const parseQIF = (content: string, ignoreZeroTransactions: boolean, accountType: AccountType | null): Expense[] => {
   const lines = content.split('\n');
   const expenses: Expense[] = [];
   let currentExpense: Partial<Expense> = {};

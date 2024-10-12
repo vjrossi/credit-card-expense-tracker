@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Alert, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FaInfoCircle } from 'react-icons/fa';
 import FileUpload from './FileUpload';
@@ -11,6 +11,7 @@ import RecurringTransactionNotification from './RecurringTransactionNotification
 import DevPage from './DevPage';
 import { logToDevPage } from '../utils/logger';
 import { DUMMY_QIF_DATA } from '../constants/dummyData';
+import { AccountType } from '../types/AccountType';
 
 const MainScreen: React.FC = () => {
   const [fileContent, setFileContent] = useState<string>('');
@@ -26,6 +27,7 @@ const MainScreen: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRecurringTransactionsExpanded, setIsRecurringTransactionsExpanded] = useState(false);
   const [isTransactionTimespanExpanded, setIsTransactionTimespanExpanded] = useState(false);
+  const [accountType, setAccountType] = useState<AccountType | null>(null);
 
   const clearDevLogs = useCallback(() => {
     localStorage.removeItem('devLogs');
@@ -48,16 +50,32 @@ const MainScreen: React.FC = () => {
     setRecurringTransactions([]);
   }, []);
 
-  const handleFileContentChange = useCallback((content: string) => {
+  const handleFileContentChange = useCallback((content: string, newAccountType: AccountType) => {
     setFileContent(content);
+    setAccountType(newAccountType);
     setIsFileUploaded(true);
-    setShowUploadAlert(false); // Reset the upload alert
-    setErrorMessage(null); // Reset the error message
+    setShowUploadAlert(true); // Show the alert when file is uploaded
+    setErrorMessage(null);
   }, []);
 
   const handleImportDummyData = useCallback(() => {
-    handleFileContentChange(DUMMY_QIF_DATA);
+    handleFileContentChange(DUMMY_QIF_DATA, AccountType.BANK);
   }, [handleFileContentChange]);
+
+  // Add this useEffect to handle the alert timeout
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (showUploadAlert) {
+      timeoutId = setTimeout(() => {
+        setShowUploadAlert(false);
+      }, 10000); // 10 seconds
+    }
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [showUploadAlert]);
 
   return (
     <div className="min-vh-100 bg-light d-flex flex-column">
@@ -97,11 +115,18 @@ const MainScreen: React.FC = () => {
           </Alert>
         )}
         {errorMessage && (
-          <Alert variant="danger" onClose={() => setErrorMessage(null)} dismissible className="mt-2">
+          <Alert variant="danger" className="mt-3">
             {errorMessage}
           </Alert>
         )}
-        <ExpenseParser fileContent={fileContent} onParsedExpenses={handleParsedExpenses} onParseError={handleParseError} ignoreZeroTransactions={ignoreZeroTransactions} />        {expenses.length > 0 && (
+        <ExpenseParser
+          fileContent={fileContent}
+          accountType={accountType}
+          onParsedExpenses={handleParsedExpenses}
+          onParseError={handleParseError}
+          ignoreZeroTransactions={ignoreZeroTransactions}
+        />
+        {expenses.length > 0 && (
           <>
             <RecurringTransactionNotification
               count={recurringCount}

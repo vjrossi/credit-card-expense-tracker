@@ -32,6 +32,7 @@ const MainScreen: React.FC = () => {
   const [finalBalance, setFinalBalance] = useState<number | null>(null);
   const [balanceInput, setBalanceInput] = useState<string>('');
   const [showResetButton, setShowResetButton] = useState<boolean>(false);
+  const [savedBalance, setSavedBalance] = useState<{ balance: number; date: string } | null>(null);
 
   const clearDevLogs = useCallback(() => {
     localStorage.removeItem('devLogs');
@@ -44,9 +45,23 @@ const MainScreen: React.FC = () => {
     setExpenses(parsedExpenses);
     setRecurringCount(recurringCount);
     setRecurringTransactions(parsedExpenses.filter(expense => expense.IsRecurring));
-    setShowUploadAlert(true); // Show success message only after successful parsing
+    setShowUploadAlert(true);
     setFinalBalance(null);
-    setBalanceInput('');
+    
+    const savedBalanceString = localStorage.getItem('savedBalance');
+    if (savedBalanceString) {
+      const saved = JSON.parse(savedBalanceString);
+      setSavedBalance(saved);
+      
+      if (parsedExpenses.length > 0 && parsedExpenses[parsedExpenses.length - 1].Date === saved.date) {
+        setBalanceInput(saved.balance.toString());
+      } else {
+        setBalanceInput('');
+      }
+    } else {
+      setBalanceInput('');
+      setSavedBalance(null);
+    }
   }, []);
 
   const handleParseError = useCallback((error: string) => {
@@ -63,6 +78,9 @@ const MainScreen: React.FC = () => {
     setShowUploadAlert(true);
     setErrorMessage(null);
     setShowResetButton(true);
+    setFinalBalance(null);
+    setBalanceInput('');
+    setSavedBalance(null);
   }, []);
 
   const handleImportDummyData = useCallback(() => {
@@ -73,10 +91,17 @@ const MainScreen: React.FC = () => {
     const parsedBalance = parseFloat(balanceInput);
     if (!isNaN(parsedBalance) && parsedBalance > 0) {
       setFinalBalance(parsedBalance);
-      setBalanceInput('');
+      
+      const lastTransactionDate = expenses[expenses.length - 1]?.Date;
+      if (lastTransactionDate) {
+        const newSavedBalance = { balance: parsedBalance, date: lastTransactionDate };
+        setSavedBalance(newSavedBalance);
+        localStorage.setItem('savedBalance', JSON.stringify(newSavedBalance));
+      }
     } else {
-      // You might want to show an error message here
       console.error('Invalid balance input');
+      // Optionally, you could set an error state here to display to the user
+      // setBalanceError('Please enter a valid positive number');
     }
   };
 

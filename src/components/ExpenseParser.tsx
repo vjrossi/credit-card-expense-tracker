@@ -16,7 +16,7 @@ const categorizeExpense = (narrative: string): string => {
   const lowercaseNarrative = narrative.toLowerCase();
 
   const matchCategory = (list: string[]): boolean => {
-    console.log('[ExpenseParser] list:', list);
+    // console.log('[ExpenseParser] list:', list);
     return list.some(item => lowercaseNarrative.includes(item.toLowerCase()));
   };
 
@@ -108,9 +108,6 @@ const parseQIF = (content: string, ignoreZeroTransactions: boolean, accountType:
   const expenses: Expense[] = [];
   let currentExpense: Partial<Expense> = {};
 
-  console.log('[ExpenseParser] Starting QIF parsing...');
-  console.log(`[ExpenseParser] Total lines to process: ${lines.length}`);
-
   for (const line of lines) {
     const type = line[0];
     const value = line.slice(1).trim();
@@ -118,37 +115,28 @@ const parseQIF = (content: string, ignoreZeroTransactions: boolean, accountType:
     switch (type) {
       case 'D':
         currentExpense.Date = parseDate(value);
-        console.log(`[ExpenseParser] Parsed date: ${currentExpense.Date}`);
         break;
       case 'T':
         const amount = parseFloat(value);
         if (amount < 0) {
           currentExpense.DebitAmount = Math.abs(amount);
           currentExpense.CreditAmount = 0;
-          console.log(`[ExpenseParser] Parsed debit amount: ${currentExpense.DebitAmount}`);
         } else {
           currentExpense.DebitAmount = 0;
           currentExpense.CreditAmount = amount;
-          console.log(`[ExpenseParser] Parsed credit amount: ${currentExpense.CreditAmount}`);
         }
         break;
       case 'M':  // Changed from 'P' to 'M' for QIF format
         currentExpense.Narrative = value;
-        console.log(`[ExpenseParser] Parsed narrative: ${currentExpense.Narrative}`);
         break;
       case 'L':  // Added case for 'L' type (category in QIF)
         currentExpense.Category = value;
-        // console.log(`[ExpenseParser] Parsed category: ${currentExpense.Category}`);
         break;
       case '^':
-        console.log('[ExpenseParser] Parsing ^')
         if (currentExpense.Date && (currentExpense.DebitAmount !== undefined || currentExpense.CreditAmount !== undefined)) {
           const debitAmount = currentExpense.DebitAmount || 0;
           const creditAmount = currentExpense.CreditAmount || 0;
           const isZeroTransaction = (debitAmount === 0 && creditAmount === 0);
-          console.log(`[ExpenseParser] Debit amount: ${debitAmount}`);
-          console.log(`[ExpenseParser] Credit amount: ${creditAmount}`);
-          console.log(`[ExpenseParser] Is zero transaction: ${isZeroTransaction}`);
           if (!(ignoreZeroTransactions && isZeroTransaction)) {
             const expense: Expense = {
               Date: currentExpense.Date,
@@ -159,12 +147,9 @@ const parseQIF = (content: string, ignoreZeroTransactions: boolean, accountType:
               IsRecurring: false,
             };
             expenses.push(expense);
-            // console.log(`[ExpenseParser] Added expense: ${JSON.stringify(expense)}`);
           } else {
-            // console.log(`[ExpenseParser] Ignored zero transaction. Debit: ${debitAmount}, Credit: ${creditAmount}`);
           }
         } else {
-          // console.log('[ExpenseParser] Skipped incomplete expense entry');
         }
         currentExpense = {};
         break;

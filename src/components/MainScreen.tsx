@@ -32,7 +32,6 @@ const MainScreen: React.FC = () => {
   const [finalBalance, setFinalBalance] = useState<number | null>(null);
   const [balanceInput, setBalanceInput] = useState<string>('');
   const [showResetButton, setShowResetButton] = useState<boolean>(false);
-  const [, setSavedBalance] = useState<{ balance: number; date: string } | null>(null);
 
   const clearDevLogs = useCallback(() => {
     localStorage.removeItem('devLogs');
@@ -51,7 +50,6 @@ const MainScreen: React.FC = () => {
     const savedBalanceString = localStorage.getItem('savedBalance');
     if (savedBalanceString) {
       const saved = JSON.parse(savedBalanceString);
-      setSavedBalance(saved);
       
       if (parsedExpenses.length > 0 && parsedExpenses[parsedExpenses.length - 1].Date === saved.date) {
         setBalanceInput(saved.balance.toString());
@@ -60,7 +58,6 @@ const MainScreen: React.FC = () => {
       }
     } else {
       setBalanceInput('');
-      setSavedBalance(null);
     }
   }, []);
 
@@ -80,7 +77,6 @@ const MainScreen: React.FC = () => {
     setShowResetButton(true);
     setFinalBalance(null);
     setBalanceInput('');
-    setSavedBalance(null);
   }, []);
 
   const handleImportDummyData = useCallback(() => {
@@ -95,7 +91,6 @@ const MainScreen: React.FC = () => {
       const lastTransactionDate = expenses[expenses.length - 1]?.Date;
       if (lastTransactionDate) {
         const newSavedBalance = { balance: parsedBalance, date: lastTransactionDate };
-        setSavedBalance(newSavedBalance);
         localStorage.setItem('savedBalance', JSON.stringify(newSavedBalance));
       }
     } else {

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Expense } from '../types/expense';
-import { parse, format, differenceInDays, addDays, isValid } from 'date-fns';
+import { parse, format, differenceInDays, isValid, addDays } from 'date-fns';
 import TransactionTooltip from './TransactionTooltip';
 import { CategoryColorMap } from '../types/categoryColorMap';
 import { Accordion } from 'react-bootstrap';
@@ -15,57 +15,109 @@ interface TransactionTimelineProps {
 const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, categoryColorMap, isExpanded, setIsExpanded }) => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  if (expenses.length === 0) return null;
-
-  const NUMBER_OF_MARKERS = 50; // Adjust this value to change the number of markers
+  const LARGE_TRANSACTION_THRESHOLD = 500; // $500
+  const NUMBER_OF_MARKERS = 50;
+  const MAX_GAP_DAYS = 7; // Maximum allowed gap between markers in days
 
   const parseDateSafely = (dateString: string) => {
     const parsedDate = parse(dateString, 'yyyy-MM-dd', new Date());
     return isValid(parsedDate) ? parsedDate : new Date();
   };
 
-  const dates = expenses.map(expense => parseDateSafely(expense.Date));
-  const startDate = new Date(Math.min(...dates.map(date => date.getTime())));
-  const endDate = new Date(Math.max(...dates.map(date => date.getTime())));
+  const timelineData = useMemo(() => {
+    // Filter out $0 amounts
+    const nonZeroExpenses = expenses.filter(expense => expense.DebitAmount > 0);
+
+    if (nonZeroExpenses.length === 0) return { markerExpenses: [], startDate: new Date(), endDate: new Date(), maxExpense: 0 };
+
+    // Sort all non-zero expenses by date
+    const sortedExpenses = [...nonZeroExpenses].sort((a, b) => 
+      parseDateSafely(a.Date).getTime() - parseDateSafely(b.Date).getTime()
+    );
+
+    const dates = sortedExpenses.map(expense => parseDateSafely(expense.Date));
+    const startDate = dates[0];
+    const endDate = dates[dates.length - 1];
+    const maxExpense = Math.max(...sortedExpenses.map(expense => expense.DebitAmount));
+
+    // Include all transactions over $500
+    const markerExpenses = sortedExpenses.filter(expense => expense.DebitAmount > LARGE_TRANSACTION_THRESHOLD);
+
+    // Function to find the nearest non-zero transaction to a given date
+    const findNearestTransaction = (targetDate: Date) => {
+      return sortedExpenses.reduce((nearest, current) => {
+        const currentDate = parseDateSafely(current.Date);
+        const nearestDate = parseDateSafely(nearest.Date);
+        return Math.abs(differenceInDays(currentDate, targetDate)) < Math.abs(differenceInDays(nearestDate, targetDate))
+          ? current
+          : nearest;
+      });
+    };
+
+    // Fill gaps
+    let lastMarkerDate = startDate;
+    for (let i = 0; i < sortedExpenses.length; i++) {
+      const currentExpense = sortedExpenses[i];
+      const currentDate = parseDateSafely(currentExpense.Date);
+      const daysSinceLastMarker = differenceInDays(currentDate, lastMarkerDate);
+
+      if (daysSinceLastMarker >= MAX_GAP_DAYS) {
+        const midpointDate = addDays(lastMarkerDate, Math.floor(daysSinceLastMarker / 2));
+        const nearestExpense = findNearestTransaction(midpointDate);
+        if (!markerExpenses.includes(nearestExpense)) {
+          markerExpenses.push(nearestExpense);
+          lastMarkerDate = parseDateSafely(nearestExpense.Date);
+        }
+      }
+
+      if (currentExpense.DebitAmount > LARGE_TRANSACTION_THRESHOLD) {
+        lastMarkerDate = currentDate;
+      }
+    }
+
+    // If we have less than NUMBER_OF_MARKERS, add more evenly distributed
+    while (markerExpenses.length < NUMBER_OF_MARKERS) {
+      const idealGap = differenceInDays(endDate, startDate) / (markerExpenses.length + 1);
+      const idealDate = addDays(startDate, Math.floor(idealGap));
+      const nearestExpense = findNearestTransaction(idealDate);
+      if (!markerExpenses.includes(nearestExpense)) {
+        markerExpenses.push(nearestExpense);
+      } else {
+        break; // Avoid infinite loop if we can't add more unique transactions
+      }
+    }
+
+    // Sort marker expenses by date
+    markerExpenses.sort((a, b) => parseDateSafely(a.Date).getTime() - parseDateSafely(b.Date).getTime());
+
+    return { markerExpenses, startDate, endDate, maxExpense };
+  }, [expenses]);
+
+  if (timelineData.markerExpenses.length === 0) return null;
+
+  const { markerExpenses, startDate, endDate, maxExpense } = timelineData;
 
   const formatDate = (date: Date) => {
     return format(date, 'dd-MM-yyyy');
   };
 
   const daysDifference = differenceInDays(endDate, startDate);
-  const markerInterval = Math.max(1, Math.floor(daysDifference / NUMBER_OF_MARKERS));
 
-  // Modify the expensesByDate to include all transactions
-  const expensesByDate = expenses.reduce((acc, expense) => {
+  const timelineMarkers = markerExpenses.map((expense, index) => {
     const date = parseDateSafely(expense.Date);
-    const dateString = format(date, 'yyyy-MM-dd');
-    if (!acc[dateString]) {
-      acc[dateString] = { total: 0, transactions: [] };
-    }
-    acc[dateString].total += expense.DebitAmount;
-    acc[dateString].transactions.push(expense);
-    return acc;
-  }, {} as Record<string, { total: number; transactions: Expense[] }>);
+    const position = (differenceInDays(date, startDate) / daysDifference) * 100;
+    const height = (expense.DebitAmount / maxExpense) * 100;
 
-  // Find the maximum daily expense for scaling
-  const maxDailyExpense = Math.max(...Object.values(expensesByDate).map(day => day.total));
-
-  // Generate the timeline markers
-  const timelineMarkers = Array.from({ length: NUMBER_OF_MARKERS }, (_, index) => {
-    const currentDate = addDays(startDate, index * markerInterval);
-    const dateString = format(currentDate, 'yyyy-MM-dd');
-    const dayData = expensesByDate[dateString] || { total: 0, transactions: [] };
-    const height = (dayData.total / maxDailyExpense) * 100;
     return (
       <div
-        key={dateString}
-        className="w-1.5 bg-blue-400 hover:bg-blue-600 transition-all duration-200 cursor-pointer"
+        key={`${expense.Date}-${index}`}
+        className="absolute bottom-0 w-1.5 bg-blue-400 hover:bg-blue-600 transition-all duration-200 cursor-pointer"
         style={{
-          height: `${Math.max(4, height * 2.5)}%`, // Increase the scaling factor
-          opacity: dayData.total > 0 ? Math.max(0.3, 0.5 + (height / 100)) : 0.1,
+          left: `${position}%`,
+          height: `${Math.max(4, height)}%`,
         }}
-        onClick={() => setSelectedDate(dateString)}
-        title={`${formatDate(currentDate)}: $${dayData.total.toFixed(2)}`}
+        onClick={() => setSelectedDate(expense.Date)}
+        title={`${formatDate(date)}: $${expense.DebitAmount.toFixed(2)}`}
       />
     );
   });
@@ -74,7 +126,7 @@ const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, cat
     <Accordion activeKey={isExpanded ? '0' : ''}>
       <Accordion.Item eventKey="0">
         <Accordion.Header onClick={() => setIsExpanded(!isExpanded)}>
-          Transaction Timeline
+          Transaction Timeline (Expenses over $500)
         </Accordion.Header>
         <Accordion.Body>
           <div className="flex items-center justify-between">
@@ -83,12 +135,12 @@ const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, cat
               <p className="text-lg font-semibold text-gray-800">{formatDate(startDate)}</p>
             </div>
             <div className="flex-grow mx-4 relative custom-scrollbar">
-              <div className="h-12 bg-blue-100 rounded-full overflow-hidden flex items-end justify-between px-2">
+              <div className="h-32 bg-blue-100 rounded-full overflow-hidden relative">
                 {timelineMarkers}
               </div>
               {selectedDate && (
                 <TransactionTooltip
-                  transactions={expensesByDate[selectedDate].transactions}
+                  transactions={expenses.filter(e => e.Date === selectedDate && e.DebitAmount > LARGE_TRANSACTION_THRESHOLD)}
                   date={selectedDate}
                   onClose={() => setSelectedDate(null)}
                   categoryColorMap={categoryColorMap}
@@ -101,7 +153,7 @@ const TransactionTimeline: React.FC<TransactionTimelineProps> = ({ expenses, cat
             </div>
           </div>
           <p className="text-center mt-4 text-gray-600">
-            {daysDifference} days
+            {daysDifference} days, showing {markerExpenses.length} transactions over $500
           </p>
         </Accordion.Body>
       </Accordion.Item>

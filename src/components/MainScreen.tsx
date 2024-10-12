@@ -31,6 +31,7 @@ const MainScreen: React.FC = () => {
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [finalBalance, setFinalBalance] = useState<number | null>(null);
   const [balanceInput, setBalanceInput] = useState<string>('');
+  const [showResetButton, setShowResetButton] = useState<boolean>(false);
 
   const clearDevLogs = useCallback(() => {
     localStorage.removeItem('devLogs');
@@ -59,8 +60,9 @@ const MainScreen: React.FC = () => {
     setFileContent(content);
     setAccountType(newAccountType);
     setIsFileUploaded(true);
-    setShowUploadAlert(true); // Show the alert when file is uploaded
+    setShowUploadAlert(true);
     setErrorMessage(null);
+    setShowResetButton(true);
   }, []);
 
   const handleImportDummyData = useCallback(() => {
@@ -77,6 +79,25 @@ const MainScreen: React.FC = () => {
       console.error('Invalid balance input');
     }
   };
+
+  const handleReset = useCallback(() => {
+    setFileContent('');
+    setExpenses([]);
+    setCategoryColorMap({});
+    setRecurringCount(0);
+    setRecurringTransactions([]);
+    setIgnoreZeroTransactions(true);
+    setIsFileUploaded(false);
+    setIsFileUploadExpanded(true);
+    setShowUploadAlert(false);
+    setErrorMessage(null);
+    setIsRecurringTransactionsExpanded(false);
+    setIsTransactionTimespanExpanded(false);
+    setAccountType(null);
+    setFinalBalance(null);
+    setBalanceInput('');
+    setShowResetButton(false);
+  }, []);
 
   // Add this useEffect to handle the alert timeout
   useEffect(() => {
@@ -112,6 +133,14 @@ const MainScreen: React.FC = () => {
               </span>
             </OverlayTrigger>
           </h1>
+          {showResetButton && (
+            <button
+              onClick={handleReset}
+              className="btn btn-outline-light"
+            >
+              Start Over
+            </button>
+          )}
         </div>
       </header>
       <main className="flex-grow-1 container pt-5">

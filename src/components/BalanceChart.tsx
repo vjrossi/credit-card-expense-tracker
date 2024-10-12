@@ -11,7 +11,7 @@ interface BalanceChartProps {
 }
 
 const BalanceChart: React.FC<BalanceChartProps> = ({ expenses, finalBalance }) => {
-  const balanceData = useMemo(() => {
+  const chartData = useMemo(() => {
     const sortedExpenses = [...expenses].sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime());
     let balance = finalBalance;
     const data = sortedExpenses.map(expense => {
@@ -20,20 +20,29 @@ const BalanceChart: React.FC<BalanceChartProps> = ({ expenses, finalBalance }) =
       balance -= expense.CreditAmount;
       return { date: expense.Date, balance: prevBalance };
     });
-    return data.reverse();
-  }, [expenses, finalBalance]);
+    const reversedData = data.reverse();
 
-  const chartData = {
-    labels: balanceData.map(item => item.date),
-    datasets: [
-      {
-        label: 'Balance',
-        data: balanceData.map(item => item.balance),
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1,
-      },
-    ],
-  };
+    const labels = reversedData.map(item => item.date);
+    const dailyNetChanges = labels.reduce((acc: Record<string, number>, date: string) => {
+      acc[date] = sortedExpenses
+        .filter(e => e.Date === date)
+        .reduce((sum, e) => sum + e.CreditAmount - e.DebitAmount, 0); // Inverted calculation here
+      return acc;
+    }, {});
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Balance',
+          data: reversedData.map(item => item.balance),
+          borderColor: 'rgb(75, 192, 192)',
+          tension: 0.1,
+        },
+      ],
+      dailyNetChanges,
+    };
+  }, [expenses, finalBalance]);
 
   const options = {
     responsive: true,
@@ -45,13 +54,33 @@ const BalanceChart: React.FC<BalanceChartProps> = ({ expenses, finalBalance }) =
         display: true,
         text: 'Account Balance Over Time',
       },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            const label = context.dataset.label || '';
+            const value = context.parsed.y;
+            const index = context.dataIndex;
+            const date = chartData.labels[index];
+            const netChange = chartData.dailyNetChanges[date];
+            const netChangeFormatted = netChange.toLocaleString('en-US', {
+              style: 'currency',
+              currency: 'USD',
+              signDisplay: 'always',
+            });
+            return [
+              `${label}: ${value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`,
+              `Change: ${netChangeFormatted}`,
+            ];
+          },
+        },
+      },
     },
     scales: {
       y: {
         beginAtZero: false,
         ticks: {
           callback: function(value: any) {
-            return '$' + value.toLocaleString();
+            return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
           }
         }
       },
